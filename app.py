@@ -960,7 +960,18 @@ def set_webhook():
 
     webhook_url = f"{host}/webhook"
     try:
-        bot.remove_webhook()
+        # Cek jika webhook sudah aktif ke URL yang sama
+        try:
+            info = bot.get_webhook_info()
+            if info and info.url == webhook_url:
+                return jsonify({
+                    "success": True,
+                    "webhook_url": webhook_url,
+                    "message": "✅ Webhook Telegram sudah aktif dan siap merespons 24 jam nonstop!"
+                })
+        except Exception:
+            pass
+
         success = bot.set_webhook(url=webhook_url)
         return jsonify({
             "success": success,
