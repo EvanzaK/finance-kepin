@@ -248,7 +248,7 @@ def init_telegram_bot():
             }
             logger.info(f"[TELEGRAM BOT] Proxy aktif untuk PythonAnywhere: {proxy_url}")
 
-        bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
+        bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML", threaded=False)
         logger.info("[TELEGRAM BOT] Bot client berhasil diinisialisasi.")
         bot_init_error = None
     except Exception as e:
