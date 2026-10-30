@@ -22,11 +22,17 @@ if hasattr(sys.stdout, "reconfigure"):
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from dotenv import load_dotenv
 
+# Dapatkan direktori dasar absolut
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load konfigurasi environment secara absolut dari folder aplikasi
+env_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path, override=True)
+load_dotenv()
+
 import database
 from database import db, hitung_metrik_ojol
-
-# Load konfigurasi environment
-load_dotenv()
 
 # Logging setup
 logging.basicConfig(

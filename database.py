@@ -14,6 +14,10 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("DatabaseManager")
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path, override=True)
 load_dotenv()
 
 # Konstanta Spesifikasi & Asumsi
@@ -23,8 +27,10 @@ DEFAULT_BIAYA_SERVIS = int(os.getenv("BIAYA_SERVIS_PER_KM", "150"))           # 
 DEFAULT_TARGET_BULANAN = int(os.getenv("TARGET_OJOL_BULANAN", "1000000"))     # Rp 1.000.000
 DEFAULT_TARGET_MILESTONE = int(os.getenv("TARGET_OJOL_MILESTONE", "500000"))  # Rp 500.000
 
-DB_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "keuangan.db")
+DB_FILE_PATH = os.path.join(BASE_DIR, "keuangan.db")
 CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
+if not os.path.isabs(CREDENTIALS_FILE):
+    CREDENTIALS_FILE = os.path.join(BASE_DIR, CREDENTIALS_FILE)
 GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "Database_Keuangan")
 STORAGE_MODE = os.getenv("STORAGE_MODE", "auto").lower()
 
