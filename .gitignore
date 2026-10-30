@@ -1,0 +1,8 @@
+.env
+credentials.json
+keuangan.db
+__pycache__/
+*.pyc
+.system_generated/
+.vscode/
+.idea/

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: finance-kepin
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 1 -k gthread --threads 4 -b 0.0.0.0:$PORT app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: STORAGE_MODE
+        value: "auto"
+      - key: GOOGLE_SHEET_NAME
+        value: "Database_Keuangan"

@@ -1,0 +1,6 @@
+flask>=3.0.0
+pyTelegramBotAPI>=4.20.0
+gspread>=6.0.0
+google-auth>=2.20.0
+python-dotenv>=1.0.0
+gunicorn>=21.2.0

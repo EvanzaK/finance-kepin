@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Kepin - Hybrid Personal Finance & ShopeeFood Tracker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              orange: '#ff6426',
+              'orange-dark': '#e24d14',
+              'orange-light': '#fff3ed',
+              blue: '#2563eb',
+              'blue-light': '#eff6ff',
+              green: '#00875a',
+              'green-light': '#ebf8f2',
+              rose: '#e11d48',
+              'rose-light': '#fef2f4',
+              purple: '#7c3aed',
+              'purple-light': '#f5f3ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f3f6fa;
+      color: #1e293b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-card {
+      background-color: #ffffff;
+      border: 1px solid #e8eff6;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.03);
+    }
+    .custom-card:hover {
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 antialiased selection:bg-orange-500 selection:text-white flex flex-col">
+
+  <!-- ================= TOP NAVBAR ================= -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 lg:px-8 py-3">
+    <div class="max-w-[1540px] mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand & Title (HANYA TEKS POLOS FINANCE KEPIN) -->
+      <div class="flex items-center space-x-3">
+        <!-- Mobile Sidebar Toggle -->
+        <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus:outline-none">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Finance Kepin</h1>
+      </div>
+
+      <!-- Center & Right Controls -->
+      <div class="flex items-center space-x-3">
+        
+        <!-- Motor Vehicle Selector Dropdown Button -->
+        <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-700 shadow-sm">
+          <span>📅</span>
+          <span>BeAT 2021 (54 km/L)</span>
+          <svg class="w-3.5 h-3.5 text-slate-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+
+        <!-- Storage Mode Status Badge -->
+        {% if storage_status.is_sheets %}
+          <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold" title="Data tersinkron otomatis ke Google Sheets: {{ storage_status.sheet_name }}">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Google Sheets</span>
+          </div>
+        {% else %}
+          <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold" title="{{ storage_status.detail }}">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span>SQLite Local</span>
+          </div>
+        {% endif %}
+
+        <!-- Quick Action Buttons -->
+        <button onclick="bukaModalTransaksi()" class="inline-flex items-center justify-center px-3.5 py-2 text-xs font-semibold rounded-xl bg-[#5c6e86] hover:bg-[#4d5c70] text-white shadow-sm transition">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          Transaksi Kas
+        </button>
+
+        <button onclick="bukaModalOjol()" class="inline-flex items-center justify-center px-3.5 py-2 text-xs font-semibold rounded-xl bg-[#ff6426] hover:bg-[#e85317] text-white shadow-md shadow-orange-500/25 transition">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          Input ShopeeFood
+        </button>
+
+        <!-- Notification Bell -->
+        <div class="relative hidden sm:block">
+          <button class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          </button>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+        </div>
+
+        <!-- User Profile Avatar -->
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-700 to-slate-800 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-slate-300">
+          KP
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= LAYOUT CONTAINER (SIDEBAR + MAIN CONTENT) ================= -->
+  <div class="max-w-[1540px] w-full mx-auto flex-1 flex flex-col lg:flex-row px-4 lg:px-8 py-5 gap-6">
+
+    <!-- ================= LEFT SIDEBAR ================= -->
+    <aside id="sidebarMenu" class="w-full lg:w-56 shrink-0 hidden lg:flex flex-col justify-between rounded-2xl bg-white border border-slate-200/80 p-3.5 shadow-sm">
+      
+      <!-- Nav Links -->
+      <nav class="space-y-1.5 text-xs font-semibold">
+        <a href="#dashboard" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl bg-[#ebf3ff] text-[#2563eb] transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#sectionDompet" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+          <span>Dompet & Pos</span>
+        </a>
+        <a href="#tabelTransaksi" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <span>Transaksi</span>
+        </a>
+        <a href="#tabelOjol" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>ShopeeFood</span>
+        </a>
+        <a href="#chartSection" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <span>Laporan</span>
+        </a>
+        <a href="#botHelpCard" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Pengaturan</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Bottom: Motivational Quote & Scooter Graphic -->
+      <div class="mt-8 pt-4 border-t border-slate-100 flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-2xl mb-2 text-slate-400">
+          🛵
+        </div>
+        <p class="text-[11px] italic text-slate-400 leading-relaxed px-2">
+          "Semangat hari ini, untuk hasil yang lebih baik esok."
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ================= MAIN CONTENT AREA ================= -->
+    <main class="flex-1 space-y-5" id="dashboard">
+
+      <!-- Flash Notifications -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs font-semibold {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% elif category == 'danger' %}bg-rose-50 border-rose-200 text-rose-800{% else %}bg-slate-100 border-slate-200 text-slate-800{% endif %}">
+              <span>{{ message }}</span>
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 text-base">&times;</button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- ================= ROW 1: TOP 4 SUMMARY CARDS ================= -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        
+        <!-- Card 1: Saldo Bersih Total (Sum seluruh dompet) -->
+        <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#eff6ff] flex items-center justify-center text-[#2563eb]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Saldo Bersih Total</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl font-extrabold tracking-tight text-slate-900">
+              {{ format_rupiah(rekap.saldo_total) }}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">
+              Akumulasi seluruh kas, bank & tabungan bluSaving
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: Pemasukan Bulan Ini -->
+        <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#e6f7ef] flex items-center justify-center text-[#00875a]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#00875a]">Pemasukan Bulan Ini</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl font-extrabold tracking-tight text-[#00875a]">
+              {{ format_rupiah(rekap.pemasukan_bulan_ini) }}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">
+              Arus kas masuk di periode {{ rekap.bulan }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: Pengeluaran Bulan Ini -->
+        <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#fef2f4] flex items-center justify-center text-[#e11d48]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#e11d48]">Pengeluaran Bulan Ini</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl font-extrabold tracking-tight text-[#e11d48]">
+              {{ format_rupiah(rekap.pengeluaran_bulan_ini) }}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">
+              Biaya operasional & belanja harian
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 4: Laba Kas ShopeeFood -->
+        <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#fff4ed] flex items-center justify-center text-[#ff6426]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#ff6426]">Laba Kas ShopeeFood</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl font-extrabold tracking-tight text-[#ff6426]">
+              {{ format_rupiah(rekap.total_laba_kas_ojol) }}
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-2 font-medium">
+              <span>📋 <b>{{ rekap.total_order_ojol }}</b> order</span>
+              <span>🛣️ <b>{{ rekap.total_km_ojol }}</b> km</span>
+              <span>⛽ <b>{{ format_rupiah(rekap.rata_rp_per_km) }}/km</b></span>
+            </p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= SECTION MULTI-DOMPET & BLUSAVING POCKETING ================= -->
+      <section id="sectionDompet" class="custom-card rounded-2xl p-5 lg:p-6 relative overflow-hidden">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 text-lg shrink-0">
+              🏦
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-slate-900">Pos Rekening & bluSaving (Pocketing)</h2>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 rounded-md border border-blue-200">
+                  {{ dompet_list|length }} Kantong Aktif
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Alokasi kas riil: Tunai saku, Bank BRI, dan Pos Tabungan bluSaving (bebas diedit / ditambah kapan saja).
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="bukaModalTransfer()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+              Pindah Dana / Transfer
+            </button>
+            <button onclick="bukaModalKelolaDompet()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+              <svg class="w-3.5 h-3.5 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Kelola Pos & Saldo Awal
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid Cards Pos Dompet -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-4">
+          {% for d in dompet_list %}
+          <div class="bg-[#f8fafc] hover:bg-white rounded-xl p-4 border border-slate-200/90 transition shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">{{ d.icon or '🏦' }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if d.tipe == 'Cash' %}bg-amber-100 text-amber-800 border border-amber-200{% elif d.tipe == 'Bank' %}bg-blue-100 text-blue-800 border border-blue-200{% else %}bg-purple-100 text-purple-800 border border-purple-200{% endif %}">
+                {{ d.tipe }}
+              </span>
+            </div>
+            <div class="mt-3">
+              <h4 class="text-xs font-bold text-slate-800 truncate" title="{{ d.nama }}">{{ d.nama }}</h4>
+              <div class="text-lg font-extrabold text-slate-900 mt-1">
+                {{ format_rupiah(d.saldo_sekarang) }}
+              </div>
+              <p class="text-[10px] text-slate-400 mt-0.5 truncate" title="{{ d.catatan }}">
+                {% if d.saldo_awal > 0 %}
+                  Awal: {{ format_rupiah(d.saldo_awal) }}
+                {% else %}
+                  {{ d.catatan or 'Siap digunakan' }}
+                {% endif %}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </section>
+
+      <!-- ================= ROW 2: TARGET FINANSIAL SHOPEEFOOD BANNER ================= -->
+      <section class="custom-card rounded-2xl p-5 lg:p-6 relative overflow-hidden">
+        
+        <!-- Header Target Card -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 text-lg shrink-0 mt-0.5">
+              🎯
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-sm font-bold text-slate-900">Target Finansial ShopeeFood (Bulan Ini)</h2>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-[#fff8ea] text-[#b45309] rounded-md border border-[#fef08a]">
+                  Target Rp 1.000.000
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Tracking progres kas laba kas bersih di tangan untuk target sampingan motor Honda Beat 2021.
+              </p>
+            </div>
+          </div>
+
+          <!-- Shift Projection Pill -->
+          <div class="bg-[#fff9ed] border border-[#fef08a] rounded-xl px-4 py-2.5 flex items-center gap-3 shrink-0">
+            <div class="w-7 h-7 rounded-lg bg-amber-400 flex items-center justify-center text-white font-bold text-xs">
+              ⚡
+            </div>
+            <div class="text-xs">
+              {% if rekap.sisa_target_utama > 0 %}
+                <div class="text-slate-800 font-bold">
+                  Kurang <span class="text-amber-700">{{ format_rupiah(rekap.sisa_target_utama) }}</span> lagi
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  Butuh sekitar <b>{{ rekap.shift_dibutuhkan }} hari</b> lagi (asumsi Rp 46.000/hari)
+                </div>
+              {% else %}
+                <div class="text-emerald-700 font-bold">
+                  🎉 Target Rp 1.000.000 Tercapai!
+                </div>
+                <div class="text-[11px] text-slate-500">Target sampingan bulan ini terpenuhi!</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Dual Progress Bars -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+          
+          <!-- Milestone 1: Rp 500.000 -->
+          <div class="bg-[#f8fafc] rounded-xl p-3.5 border border-slate-100">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-bold text-[#00875a] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#00875a]"></span>
+                Milestone 1: Rp 500.000
+              </span>
+              <span class="font-bold text-slate-700">{{ rekap.pct_milestone }}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
+              <div class="h-full bg-[#10b981] rounded-full transition-all duration-700" style="width: {{ rekap.pct_milestone }}%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
+              <span>Terkumpul: {{ format_rupiah(rekap.total_laba_kas_ojol) }}</span>
+              <span>Sisa: {{ format_rupiah(rekap.sisa_target_milestone) }}</span>
+            </div>
+          </div>
+
+          <!-- Target Utama: Rp 1.000.000 -->
+          <div class="bg-[#f8fafc] rounded-xl p-3.5 border border-slate-100">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-bold text-[#7c3aed] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#7c3aed]"></span>
+                Target Utama: Rp 1.000.000
+              </span>
+              <span class="font-bold text-slate-700">{{ rekap.pct_utama }}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
+              <div class="h-full bg-[#7c3aed] rounded-full transition-all duration-700" style="width: {{ rekap.pct_utama }}%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
+              <span>Terkumpul: {{ format_rupiah(rekap.total_laba_kas_ojol) }}</span>
+              <span>Sisa: {{ format_rupiah(rekap.sisa_target_utama) }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sub Strip Info Motor -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100 text-xs">
+          <div class="flex items-center gap-1.5 text-slate-600">
+            <span class="text-blue-500 font-bold">🔧</span>
+            <span>Dana Servis Disisihkan:</span>
+            <span class="text-amber-600 font-bold">{{ format_rupiah(rekap.total_dana_servis) }}</span>
+            <span class="text-[10px] text-slate-400">(Rp150/km)</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-slate-600">
+            <span class="text-emerald-500 font-bold">🏷️</span>
+            <span>Laba Murni (Real):</span>
+            <span class="text-emerald-700 font-bold">{{ format_rupiah(rekap.total_laba_bersih_murni) }}</span>
+            <span class="text-[10px] text-slate-400">(Potong servis & BBM)</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-slate-600">
+            <span class="text-slate-400 font-bold">⛽</span>
+            <span>Konsumsi Motor:</span>
+            <span class="text-blue-600 font-bold">54 km/Liter</span>
+            <span class="text-[10px] text-slate-400">(Honda Beat 2021)</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= ROW 3: CHARTS SECTION ================= -->
+      <section id="chartSection" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Chart 1: Tren Harian ShopeeFood (Col-span 7) -->
+        <div class="lg:col-span-7 custom-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Tren Harian ShopeeFood</h3>
+              <p class="text-[11px] text-slate-400">Perbandingan laba kas di tangan (Rp) dan jarak tempuh (km)</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium">Bulan Ini ▾</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center gap-5 mt-3 text-xs text-slate-600 font-medium">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3.5 h-3 rounded-md bg-[#ff6426]"></span>
+              <span>Laba Kas di Tangan (Rp)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-[#2563eb] inline-block relative after:w-2 after:h-2 after:rounded-full after:bg-[#2563eb] after:absolute after:-top-[3px] after:left-0.5"></span>
+              <span>Jarak Tempuh (KM)</span>
+            </div>
+          </div>
+
+          <div class="h-64 relative mt-2">
+            <canvas id="ojolChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Proporsi Pengeluaran (Col-span 5) -->
+        <div class="lg:col-span-5 custom-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Proporsi Pengeluaran</h3>
+              <p class="text-[11px] text-slate-400">Distribusi pengeluaran berdasarkan kategori</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium">Kategori ▾</span>
+          </div>
+
+          <div class="flex-1 flex flex-col sm:flex-row items-center justify-center gap-4 py-2">
+            <div class="h-44 w-44 relative shrink-0">
+              <canvas id="kategoriChart"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-[10px] text-slate-400 font-medium">Total</span>
+                <span class="text-sm font-extrabold text-slate-800">{{ format_rupiah(rekap.pengeluaran_bulan_ini) }}</span>
+              </div>
+            </div>
+
+            <div class="w-full sm:w-auto flex-1 space-y-1.5 text-xs" id="legendList">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 text-center">
+            <span class="text-[11px] text-slate-400">Data pengeluaran aktual dari seluruh dompet</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= ROW 4: TABLE RIWAYAT NARIK SHOPEEFOOD ================= -->
+      <section id="tabelOjol" class="custom-card rounded-2xl overflow-hidden">
+        
+        <div class="p-4 lg:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-base shrink-0">
+              🛵
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold text-slate-900">Riwayat Narik ShopeeFood Terkini</h3>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 rounded-md border border-amber-200">
+                  {{ log_ojol|length }} Sesi
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Laba kas bersih otomatis masuk ke <b>Kas Tunai</b> di saku Anda.</p>
+            </div>
+          </div>
+          <button onclick="bukaModalOjol()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#ff6426] hover:bg-[#e85317] text-white shadow-sm transition">
+            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Tarikan
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-[#f8fafc] text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-100">
+              <tr>
+                <th class="py-3 px-4">TANGGAL</th>
+                <th class="py-3 px-3">ORDER</th>
+                <th class="py-3 px-3">ODOMETER</th>
+                <th class="py-3 px-3">JARAK</th>
+                <th class="py-3 px-3">OMZET</th>
+                <th class="py-3 px-3">BENSIN KAS</th>
+                <th class="py-3 px-3">LABA KAS (TUNAI)</th>
+                <th class="py-3 px-3">CADANGAN SERVIS</th>
+                <th class="py-3 px-3">LABA BERSIH</th>
+                <th class="py-3 px-4 text-center">AKSI</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium">
+              {% for item in log_ojol %}
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 whitespace-nowrap font-bold text-slate-900">{{ item.tanggal }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">{{ item.jumlah_order }} order</td>
+                <td class="py-3.5 px-3 whitespace-nowrap text-slate-500 font-mono">{{ item.odo_awal }} ➡️ {{ item.odo_akhir }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-bold text-[#0284c7]">{{ item.jarak_km }} km</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold">{{ format_rupiah(item.omzet_kotor) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-rose-500">{{ format_rupiah(item.modal_bensin) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-bold text-[#ff6426]">{{ format_rupiah(item.laba_kas) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-emerald-600">{{ format_rupiah(item.dana_servis) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-800">{{ format_rupiah(item.laba_bersih_murni) }}</span>
+                    {% if item.rp_per_km >= 1200 %}
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        🟢 {{ format_rupiah(item.rp_per_km) }}/km
+                      </span>
+                    {% elif item.rp_per_km >= 800 %}
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        🟡 {{ format_rupiah(item.rp_per_km) }}/km
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">
+                        🔴 {{ format_rupiah(item.rp_per_km) }}/km
+                      </span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  <form action="/api/ojol/delete/{{ item.id }}" method="POST" onsubmit="return confirm('Hapus entri riwayat narik ini?');" class="inline">
+                    <button type="submit" class="text-slate-400 hover:text-rose-500 transition p-1" title="Hapus">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="10" class="text-center py-8 text-slate-400">Belum ada riwayat narik ShopeeFood.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= ROW 5: TABLE 10 TRANSAKSI ARUS KAS TERAKHIR ================= -->
+      <section id="tabelTransaksi" class="custom-card rounded-2xl overflow-hidden">
+        
+        <div class="p-4 lg:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 text-base shrink-0">
+              🪙
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold text-slate-900">10 Transaksi Arus Kas Terakhir</h3>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-sky-50 text-sky-700 rounded-md border border-sky-200">
+                  {{ transaksi|length }} Transaksi
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Pemasukan, pengeluaran, dan riwayat pindah dana antar dompet.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="bukaModalTransfer()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 shadow-sm transition">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+              Transfer
+            </button>
+            <button onclick="bukaModalTransaksi()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition">
+              <svg class="w-3.5 h-3.5 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              Tambah Transaksi
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-[#f8fafc] text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-100">
+              <tr>
+                <th class="py-3 px-4">WAKTU</th>
+                <th class="py-3 px-3">TIPE</th>
+                <th class="py-3 px-3">DOMPET / REKENING</th>
+                <th class="py-3 px-3">KATEGORI</th>
+                <th class="py-3 px-4">NOMINAL</th>
+                <th class="py-3 px-4">CATATAN</th>
+                <th class="py-3 px-4 text-center">AKSI</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium">
+              {% for item in transaksi %}
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">{{ item.tanggal }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">
+                  {% if item.tipe|lower == 'pemasukan' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#ebf8f2] text-[#00875a] border border-[#a3e2c6]">
+                      ⬇ Pemasukan
+                    </span>
+                  {% elif item.tipe|lower == 'pengeluaran' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#fef2f4] text-[#e11d48] border border-[#fecdd3]">
+                      ⬆ Pengeluaran
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      🔄 Transfer
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="py-3.5 px-3 whitespace-nowrap">
+                  {% if item.tipe|lower == 'transfer' %}
+                    <span class="font-bold text-slate-800 text-[11px]">
+                      {{ item.dompet }} ➡️ {{ item.dompet_tujuan }}
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 font-semibold text-slate-700 px-2 py-0.5 rounded-md bg-slate-100 text-[11px]">
+                      {{ item.dompet or 'Kas Tunai' }}
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="py-3.5 px-3 whitespace-nowrap">
+                  <span class="font-semibold text-slate-700 px-2 py-0.5 rounded bg-slate-100 text-[11px]">
+                    {{ item.kategori }}
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 whitespace-nowrap font-bold {% if item.tipe|lower == 'pemasukan' %}text-[#00875a]{% elif item.tipe|lower == 'pengeluaran' %}text-[#e11d48]{% else %}text-blue-600{% endif %}">
+                  {{ format_rupiah(item.nominal) }}
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">{{ item.catatan or '-' }}</td>
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  <form action="/api/transaksi/delete/{{ item.id }}" method="POST" onsubmit="return confirm('Hapus transaksi ini dari buku kas?');" class="inline">
+                    <button type="submit" class="text-slate-400 hover:text-rose-500 transition p-1" title="Hapus">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="7" class="text-center py-8 text-slate-400">Belum ada transaksi arus kas.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= CHEAT SHEET BOT TELEGRAM CARD ================= -->
+      <section id="botHelpCard" class="custom-card rounded-2xl p-4 lg:p-5 text-xs">
+        <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('botHelpContent').classList.toggle('hidden')">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🤖</span>
+            <h4 class="font-bold text-slate-800">Panduan Perintah Bot Telegram (Multi-Dompet)</h4>
+            <span class="text-slate-400 text-[11px]">(Klik untuk buka / tutup)</span>
+          </div>
+          <span class="text-slate-400 text-sm">▾</span>
+        </div>
+
+        <div id="botHelpContent" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mt-3 pt-3 border-t border-slate-100 text-slate-600">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="text-[#2563eb] font-bold mb-1">/dompet</div>
+            <p class="text-[11px] text-slate-500 mb-1">Cek saldo semua rekening</p>
+            <code class="text-[11px] text-slate-800 block bg-white p-1.5 rounded border border-slate-200">/dompet</code>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="text-blue-600 font-bold mb-1">/transfer</div>
+            <p class="text-[11px] text-slate-500 mb-1">Pindah dana / setor</p>
+            <code class="text-[11px] text-slate-800 block bg-white p-1.5 rounded border border-slate-200">/transfer tunai bri 50000 setor atm</code>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="text-[#00875a] font-bold mb-1">/masuk</div>
+            <p class="text-[11px] text-slate-500 mb-1">Pemasukan kas/bank</p>
+            <code class="text-[11px] text-slate-800 block bg-white p-1.5 rounded border border-slate-200">/masuk gaji 3000000 bonus bri</code>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="text-[#e11d48] font-bold mb-1">/keluar</div>
+            <p class="text-[11px] text-slate-500 mb-1">Pengeluaran harian</p>
+            <code class="text-[11px] text-slate-800 block bg-white p-1.5 rounded border border-slate-200">/keluar makan 15000 warteg tunai</code>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div class="text-[#ff6426] font-bold mb-1">/ojol</div>
+            <p class="text-[11px] text-slate-500 mb-1">Narik ShopeeFood</p>
+            <code class="text-[11px] text-slate-800 block bg-white p-1.5 rounded border border-slate-200">/ojol 61000 15000 7 4818 4907</code>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ================= MODAL TRANSAKSI KAS ================= -->
+  <div id="modalTransaksi" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden p-6 relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <span>💳</span> Catat Transaksi Arus Kas
+        </h3>
+        <button onclick="tutupModalTransaksi()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <form action="/api/transaksi" method="POST" class="space-y-3.5 mt-4 text-xs">
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Tipe Transaksi</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="tipe" value="Pengeluaran" checked class="peer sr-only">
+              <div class="py-2.5 text-center rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-rose-50 peer-checked:border-rose-400 peer-checked:text-rose-700 font-bold transition">
+                ↑ Pengeluaran
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="tipe" value="Pemasukan" class="peer sr-only">
+              <div class="py-2.5 text-center rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-emerald-50 peer-checked:border-emerald-400 peer-checked:text-emerald-700 font-bold transition">
+                ↓ Pemasukan
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Sumber Dana / Dompet</label>
+          <select id="selectDompetTransaksi" name="dompet" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none font-semibold">
+            {% for d in dompet_list %}
+              <option value="{{ d.nama }}">{{ d.icon or '🏦' }} {{ d.nama }} (Saldo: {{ format_rupiah(d.saldo_sekarang) }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Kategori</label>
+          <input type="text" name="kategori" placeholder="Contoh: Blu BCA Tabungan, Dana Darurat, Gaji..." required list="list-kategori" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none" oninput="autoPilihDompet(this.value)">
+          <datalist id="list-kategori">
+            <option value="Blu BCA Tabungan">
+            <option value="Blu BCA Dana Darurat">
+            <option value="Tabungan">
+            <option value="Dana Darurat">
+            <option value="Makan & Minum">
+            <option value="Bensin">
+            <option value="Servis Motor">
+            <option value="Belanja Harian">
+            <option value="Gaji Pokok">
+            <option value="Freelance">
+            <option value="ShopeeFood">
+            <option value="Lain-Lain">
+          </datalist>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Nominal (Rp)</label>
+          <input type="number" name="nominal" placeholder="Contoh: 15000" min="1" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none font-mono">
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Catatan (Opsional)</label>
+          <input type="text" name="catatan" placeholder="Keterangan tambahan..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Waktu Transaksi (Opsional)</label>
+          <input type="text" name="tanggal" placeholder="YYYY-MM-DD HH:MM (Kosongkan untuk sekarang)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="tutupModalTransaksi()" class="w-1/2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition">Batal</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#5c6e86] hover:bg-[#4d5c70] text-white font-semibold transition shadow-sm">Simpan Transaksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL TRANSFER / PINDAH DANA ================= -->
+  <div id="modalTransfer" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden p-6 relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <span>🔄</span> Pindah Dana Antar Dompet / Rekening
+        </h3>
+        <button onclick="tutupModalTransfer()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <form action="/api/transfer" method="POST" class="space-y-3.5 mt-4 text-xs">
+        
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Dari Dompet (Asal)</label>
+          <select name="dompet_asal" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none font-semibold">
+            {% for d in dompet_list %}
+              <option value="{{ d.nama }}">{{ d.icon or '🏦' }} {{ d.nama }} (Saldo: {{ format_rupiah(d.saldo_sekarang) }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Ke Dompet (Tujuan)</label>
+          <select name="dompet_tujuan" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none font-semibold">
+            {% for d in dompet_list %}
+              <option value="{{ d.nama }}" {% if loop.index == 2 %}selected{% endif %}>{{ d.icon or '🏦' }} {{ d.nama }} (Saldo: {{ format_rupiah(d.saldo_sekarang) }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Nominal Transfer (Rp)</label>
+          <input type="number" name="nominal" placeholder="Contoh: 50000" min="1" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none font-mono font-bold">
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Catatan / Alasan Transfer (Opsional)</label>
+          <input type="text" name="catatan" placeholder="Contoh: Setor tunai hasil ojol ke ATM, Alokasi bluSaving..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="tutupModalTransfer()" class="w-1/2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition">Batal</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition shadow-md shadow-blue-500/20">Pindahkan Saldo</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL KELOLA DOMPET & SALDO AWAL ================= -->
+  <div id="modalKelolaDompet" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-2xl w-full rounded-2xl shadow-2xl overflow-hidden p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <span>⚙️</span> Kelola Pos Rekening & Saldo Awal
+          </h3>
+          <p class="text-[11px] text-slate-400">Sesuaikan saldo awal agar sama persis dengan saldo m-Banking / dompet fisik nyata Anda saat ini.</p>
+        </div>
+        <button onclick="tutupModalKelolaDompet()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <!-- List Dompet Existing -->
+      <div class="mt-4 space-y-3">
+        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Rekening & Kantong bluSaving:</h4>
+        
+        {% for d in dompet_list %}
+        <form action="/api/dompet/update/{{ d.id }}" method="POST" class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2.5 flex-1">
+            <span class="text-xl">{{ d.icon or '🏦' }}</span>
+            <div class="flex-1">
+              <input type="text" name="nama" value="{{ d.nama }}" required class="font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2.5 py-1 w-full text-xs focus:outline-none focus:border-blue-500">
+              <span class="text-[10px] text-slate-400 block mt-0.5">{{ d.tipe }} • Saldo Realtime: <b>{{ format_rupiah(d.saldo_sekarang) }}</b></span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div>
+              <span class="text-[10px] text-slate-500 block">Saldo Awal:</span>
+              <input type="number" name="saldo_awal" value="{{ d.saldo_awal }}" min="0" required class="w-32 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 font-mono font-bold text-xs focus:outline-none focus:border-blue-500">
+            </div>
+            <button type="submit" class="mt-3.5 px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition" title="Simpan Perubahan">
+              Simpan
+            </button>
+            {% if d.nama not in ['Kas Tunai', 'Bank BRI'] %}
+            <button type="button" onclick="hapusDompet('{{ d.id }}', '{{ d.nama }}')" class="mt-3.5 px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition" title="Hapus Kantong">
+              🗑️
+            </button>
+            {% endif %}
+          </div>
+        </form>
+        {% endfor %}
+      </div>
+
+      <!-- Form Tambah Kantong Baru -->
+      <div class="mt-6 pt-5 border-t border-slate-200">
+        <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+          <span>➕</span> Buat Kantong / Rekening Baru (bluSaving / e-Wallet)
+        </h4>
+
+        <form action="/api/dompet" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 text-xs">
+          <div class="sm:col-span-2">
+            <label class="block text-slate-600 font-medium mb-1">Nama Kantong</label>
+            <input type="text" name="nama" placeholder="Contoh: Blu BCA - Dana Darurat, ShopeePay..." required class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-600 font-medium mb-1">Tipe</label>
+            <select name="tipe" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:outline-none focus:border-blue-500">
+              <option value="bluSaving">bluSaving</option>
+              <option value="Bank">Bank</option>
+              <option value="e-Wallet">e-Wallet</option>
+              <option value="Cash">Cash</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 font-medium mb-1">Saldo Awal (Rp)</label>
+            <input type="number" name="saldo_awal" placeholder="Contoh: 500000" min="0" value="0" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono focus:bg-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-600 font-medium mb-1">Ikon Emoji</label>
+            <input type="text" name="icon" value="🏦" placeholder="Emoji misal: 🏦, 🚗, 🛡️" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center text-sm focus:bg-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-600 font-medium mb-1">Catatan</label>
+            <input type="text" name="catatan" placeholder="Keterangan pos..." class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div class="sm:col-span-3 pt-1">
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shadow-sm">
+              + Tambahkan Kantong Baru
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL INPUT SHOPEEFOOD ================= -->
+  <div id="modalOjol" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <span>🛵</span> Input Laporan Narik ShopeeFood
+        </h3>
+        <button onclick="tutupModalOjol()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="formOjol" action="/api/ojol" method="POST" class="space-y-3.5 mt-4 text-xs">
+        
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1">Tanggal Narik</label>
+          <input type="date" name="tanggal" value="{{ today_str }}" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-700 font-semibold mb-1">Omzet Kotor (Rp)</label>
+            <input type="number" id="inp_omzet" name="omzet_kotor" placeholder="Contoh: 61000" min="1" required oninput="hitungLiveOjol()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-semibold mb-1">Modal Bensin Kas (Rp)</label>
+            <input type="number" id="inp_bensin" name="modal_bensin" placeholder="Contoh: 15000" min="0" required oninput="hitungLiveOjol()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-slate-700 font-semibold mb-1">Jumlah Order</label>
+            <input type="number" name="jumlah_order" placeholder="Contoh: 7" min="1" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-semibold mb-1">Odometer Awal</label>
+            <input type="number" id="inp_odo_awal" name="odo_awal" placeholder="Contoh: 4818" min="0" required oninput="hitungLiveOjol()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-semibold mb-1">Odometer Akhir</label>
+            <input type="number" id="inp_odo_akhir" name="odo_akhir" placeholder="Contoh: 4907" min="0" required oninput="hitungLiveOjol()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:bg-white focus:border-orange-500 focus:outline-none font-mono">
+          </div>
+        </div>
+
+        <!-- LIVE PREVIEW CALCULATION BOX -->
+        <div id="livePreviewBox" class="bg-[#f8fafc] p-4 rounded-xl border border-slate-200 space-y-2">
+          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+            <span>⚡ Kalkulasi Otomatis (Live Preview)</span>
+            <span id="prev_rasio_badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">-</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-200 text-xs">
+            <div>
+              <span class="text-slate-400 block text-[10px]">Jarak Tempuh:</span>
+              <span id="prev_jarak" class="font-bold text-[#0284c7]">0 km</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">Laba Kas (Di Tangan):</span>
+              <span id="prev_laba_kas" class="font-bold text-[#ff6426]">Rp 0</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">Cadangan Servis:</span>
+              <span id="prev_servis" class="font-bold text-amber-600">Rp 0</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">BBM Riil (54 km/L):</span>
+              <span id="prev_bbm_riil" class="font-bold text-slate-600">0 L (~Rp 0)</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">Laba Bersih Murni:</span>
+              <span id="prev_laba_murni" class="font-bold text-emerald-700">Rp 0</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">Rasio Rp/KM:</span>
+              <span id="prev_rp_per_km" class="font-bold text-slate-900">Rp 0/km</span>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 pt-1">
+            *Laba kas otomatis masuk ke <b>Kas Tunai</b> di saku Anda.
+          </p>
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="tutupModalOjol()" class="w-1/2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition">Batal</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#ff6426] hover:bg-[#e85317] text-white font-semibold transition shadow-md shadow-orange-500/20">Simpan & Sinkronkan</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT & CHART CONFIGURATION ================= -->
+  <script>
+    function rupiah(val) {
+      return "Rp " + Math.round(val || 0).toLocaleString('id-ID');
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('sidebarMenu').classList.toggle('hidden');
+    }
+
+    // Modal Transaksi
+    function bukaModalTransaksi() {
+      document.getElementById('modalTransaksi').classList.remove('hidden');
+    }
+    function tutupModalTransaksi() {
+      document.getElementById('modalTransaksi').classList.add('hidden');
+    }
+    function autoPilihDompet(val) {
+      const sel = document.getElementById('selectDompetTransaksi');
+      if (!sel || !val) return;
+      const v = val.toLowerCase().trim();
+      for (let i = 0; i < sel.options.length; i++) {
+        const optVal = sel.options[i].value.toLowerCase();
+        if ((v.includes('darurat') || v.includes('emergency')) && optVal.includes('darurat')) {
+          sel.selectedIndex = i;
+          return;
+        }
+        if ((v.includes('tabung') || v.includes('saving') || v.includes('blu')) && optVal.includes('tabungan')) {
+          sel.selectedIndex = i;
+          return;
+        }
+        if ((v.includes('gaji') || v.includes('payroll')) && optVal.includes('bri')) {
+          sel.selectedIndex = i;
+          return;
+        }
+      }
+    }
+
+    // Modal Ojol
+    function bukaModalOjol() {
+      document.getElementById('modalOjol').classList.remove('hidden');
+      hitungLiveOjol();
+    }
+    function tutupModalOjol() {
+      document.getElementById('modalOjol').classList.add('hidden');
+    }
+
+    // Modal Transfer
+    function bukaModalTransfer() {
+      document.getElementById('modalTransfer').classList.remove('hidden');
+    }
+    function tutupModalTransfer() {
+      document.getElementById('modalTransfer').classList.add('hidden');
+    }
+
+    // Modal Kelola Dompet
+    function bukaModalKelolaDompet() {
+      document.getElementById('modalKelolaDompet').classList.remove('hidden');
+    }
+    function tutupModalKelolaDompet() {
+      document.getElementById('modalKelolaDompet').classList.add('hidden');
+    }
+
+    function hapusDompet(id, nama) {
+      if (confirm(`Yakin ingin menghapus kantong '${nama}'?`)) {
+        fetch(`/api/dompet/delete/${id}`, { method: 'POST' })
+          .then(() => location.reload())
+          .catch(err => alert("Gagal menghapus dompet"));
+      }
+    }
+
+    // Live Calculation Ojol
+    function hitungLiveOjol() {
+      const omzet = parseFloat(document.getElementById('inp_omzet').value) || 0;
+      const bensin = parseFloat(document.getElementById('inp_bensin').value) || 0;
+      const odoAwal = parseFloat(document.getElementById('inp_odo_awal').value) || 0;
+      const odoAkhir = parseFloat(document.getElementById('inp_odo_akhir').value) || 0;
+
+      const jarak = Math.max(0, odoAkhir - odoAwal);
+      const labaKas = omzet - bensin;
+      const estimasiLiter = jarak / 54.0;
+      const estimasiBBM = Math.round(estimasiLiter * 10000);
+      const danaServis = Math.round(jarak * 150);
+      const labaMurni = omzet - estimasiBBM - danaServis;
+      const rpPerKm = jarak > 0 ? Math.round(omzet / jarak) : 0;
+
+      document.getElementById('prev_jarak').innerText = jarak + " km";
+      document.getElementById('prev_laba_kas').innerText = rupiah(labaKas);
+      document.getElementById('prev_servis').innerText = rupiah(danaServis);
+      document.getElementById('prev_bbm_riil').innerText = estimasiLiter.toFixed(2) + " L (~" + rupiah(estimasiBBM) + ")";
+      document.getElementById('prev_laba_murni').innerText = rupiah(labaMurni);
+      document.getElementById('prev_rp_per_km').innerText = rupiah(rpPerKm) + "/km";
+
+      const badgeEl = document.getElementById('prev_rasio_badge');
+      if (rpPerKm >= 1200) {
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+        badgeEl.innerText = "🟢 Sangat Efisien";
+      } else if (rpPerKm >= 800) {
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+        badgeEl.innerText = "🟡 Cukup";
+      } else if (jarak > 0) {
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300";
+        badgeEl.innerText = "🔴 Banyak KM Kosong";
+      } else {
+        badgeEl.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-500";
+        badgeEl.innerText = "-";
+      }
+    }
+
+    function formatTanggalLabel(tglStr) {
+      if (!tglStr) return "";
+      const parts = tglStr.split("-");
+      if (parts.length === 3) {
+        const bulanNama = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        const blnIdx = parseInt(parts[1], 10) - 1;
+        return `${parseInt(parts[2], 10)} ${bulanNama[blnIdx] || parts[1]}`;
+      }
+      return tglStr;
+    }
+
+    // Chart.js Setup
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch('/api/charts')
+        .then(res => res.json())
+        .then(response => {
+          if (!response.success) return;
+          const data = response.data;
+
+          // 1. Ojol Performance Chart
+          const ctxOjol = document.getElementById('ojolChart').getContext('2d');
+          const rawLabels = data.ojol_chart.labels || [];
+          const labels = rawLabels.length > 0 ? rawLabels.map(formatTanggalLabel) : ['Belum Ada Data'];
+          const labaKasData = rawLabels.length > 0 ? data.ojol_chart.laba_kas : [0];
+          const jarakKmData = rawLabels.length > 0 ? data.ojol_chart.jarak_km : [0];
+
+          new Chart(ctxOjol, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Laba Kas di Tangan (Rp)',
+                  data: labaKasData,
+                  backgroundColor: '#ff7a29',
+                  hoverBackgroundColor: '#ea580c',
+                  borderRadius: 6,
+                  borderSkipped: false,
+                  maxBarThickness: 50,
+                  yAxisID: 'y'
+                },
+                {
+                  label: 'Jarak Tempuh (KM)',
+                  data: jarakKmData,
+                  type: 'line',
+                  borderColor: '#2563eb',
+                  backgroundColor: '#2563eb',
+                  borderWidth: 2.5,
+                  pointBackgroundColor: '#ffffff',
+                  pointBorderColor: '#2563eb',
+                  pointBorderWidth: 2.5,
+                  pointRadius: 5,
+                  tension: 0.2,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#0f172a',
+                  titleFont: { family: 'Plus Jakarta Sans', size: 11 },
+                  bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
+                  padding: 10,
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: function(context) {
+                      if (context.dataset.yAxisID === 'y') {
+                        return context.dataset.label + ': ' + rupiah(context.parsed.y);
+                      }
+                      return context.dataset.label + ': ' + context.parsed.y + ' km';
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+                },
+                y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  grid: { color: '#f1f5f9' },
+                  ticks: {
+                    color: '#64748b',
+                    font: { size: 10 },
+                    callback: function(value) { return 'Rp ' + (value / 1000) + 'k'; }
+                  }
+                },
+                y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  grid: { display: false },
+                  ticks: {
+                    color: '#2563eb',
+                    font: { size: 10 },
+                    callback: function(value) { return value + ' km'; }
+                  }
+                }
+              }
+            }
+          });
+
+          // 2. Expense Category Doughnut Chart
+          const ctxKategori = document.getElementById('kategoriChart').getContext('2d');
+          const hasKategoriData = data.kategori_chart.labels && data.kategori_chart.labels.length > 0;
+          const legendEl = document.getElementById('legendList');
+
+          if (hasKategoriData) {
+            const catLabels = data.kategori_chart.labels;
+            const catValues = data.kategori_chart.values;
+            const totalPengeluaran = catValues.reduce((a, b) => a + b, 0);
+            const catColors = ['#3b82f6', '#f97316', '#10b981', '#8b5cf6', '#ec4899', '#eab308', '#06b6d4'];
+
+            new Chart(ctxKategori, {
+              type: 'doughnut',
+              data: {
+                labels: catLabels,
+                datasets: [{
+                  data: catValues,
+                  backgroundColor: catColors.slice(0, catLabels.length),
+                  borderWidth: 3,
+                  borderColor: '#ffffff',
+                  hoverOffset: 4
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 8,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: function(context) {
+                        return context.label + ': ' + rupiah(context.parsed);
+                      }
+                    }
+                  }
+                },
+                cutout: '72%'
+              }
+            });
+
+            let legendHtml = '';
+            catLabels.forEach((cat, idx) => {
+              const val = catValues[idx];
+              const pct = totalPengeluaran > 0 ? Math.round((val / totalPengeluaran) * 100) : 0;
+              const color = catColors[idx % catColors.length];
+              legendHtml += `
+                <div class="flex items-center justify-between text-slate-600">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
+                    <span>${cat}</span>
+                  </div>
+                  <span class="font-bold text-slate-700">${pct}%</span>
+                </div>
+              `;
+            });
+            legendEl.innerHTML = legendHtml;
+
+          } else {
+            new Chart(ctxKategori, {
+              type: 'doughnut',
+              data: {
+                labels: ['Belum Ada Pengeluaran'],
+                datasets: [{
+                  data: [1],
+                  backgroundColor: ['#e2e8f0'],
+                  borderWidth: 0
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: { enabled: false }
+                },
+                cutout: '72%'
+              }
+            });
+
+            legendEl.innerHTML = `
+              <div class="text-slate-400 text-xs py-2 text-center sm:text-left">
+                Belum ada data pengeluaran kas bulan ini.
+              </div>
+            `;
+          }
+
+        })
+        .catch(err => console.error("Error loading charts:", err));
+    });
+  </script>
+
+</body>
+</html>
