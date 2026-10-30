@@ -46,12 +46,14 @@ app.secret_key = os.getenv("SECRET_KEY", "hybrid-finance-shopeefood-secret-2026"
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 
+DEFAULT_REGISTERED_TOKEN = "9201080606:AAFYKLFkIbdwgo66nSc82DJyY_uD-oLE3bM"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-IS_TOKEN_PLACEHOLDER = (
-    not TELEGRAM_BOT_TOKEN
-    or "YOUR_TELEGRAM" in TELEGRAM_BOT_TOKEN
-    or TELEGRAM_BOT_TOKEN == "none"
-)
+if not TELEGRAM_BOT_TOKEN or "YOUR_TELEGRAM" in TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == "none":
+    TELEGRAM_BOT_TOKEN = DEFAULT_REGISTERED_TOKEN
+
+IS_TOKEN_PLACEHOLDER = False
+bot = None
+bot_init_error = None
 
 bot = None
 
@@ -223,21 +225,19 @@ def buat_progress_bar_ascii(current: int, target: int, length: int = 10) -> str:
 
 def init_telegram_bot():
     """Inisialisasi bot telebot dan daftarkan seluruh handler perintah."""
-    global bot
-    if IS_TOKEN_PLACEHOLDER:
-        logger.warning("==================================================================")
-        logger.warning("[TELEGRAM BOT] Token belum disetel atau masih placeholder di .env.")
-        logger.warning("Web Dashboard tetap berjalan penuh di browser.")
-        logger.warning("Untuk mengaktifkan bot Telegram, isi TELEGRAM_BOT_TOKEN dari @BotFather di file .env.")
-        logger.warning("==================================================================")
+    global bot, bot_init_error
+    if not TELEGRAM_BOT_TOKEN:
+        bot_init_error = "Token belum disetel di TELEGRAM_BOT_TOKEN."
         return None
 
     try:
         import telebot
         bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
         logger.info("[TELEGRAM BOT] Bot client berhasil diinisialisasi.")
+        bot_init_error = None
     except Exception as e:
-        logger.error(f"[TELEGRAM BOT] Gagal inisialisasi TeleBot: {e}")
+        bot_init_error = f"Gagal inisialisasi TeleBot (Pustaka pyTelegramBotAPI): {e}"
+        logger.error(f"[TELEGRAM BOT] {bot_init_error}")
         return None
 
     @bot.message_handler(commands=["start", "help"])
@@ -931,8 +931,17 @@ def webhook():
 @app.route("/set_webhook", methods=["GET"])
 def set_webhook():
     """Mengaktifkan Webhook Telegram secara instan dari browser."""
+    global bot
     if not bot:
-        return jsonify({"success": False, "error": "Bot belum dikonfigurasi"}), 400
+        init_telegram_bot()
+
+    if not bot:
+        return jsonify({
+            "success": False,
+            "error": "Bot belum dikonfigurasi",
+            "detail": bot_init_error or "Gagal inisialisasi bot telebot",
+            "token_masked": TELEGRAM_BOT_TOKEN[:10] + "..." if TELEGRAM_BOT_TOKEN else "None"
+        }), 400
 
     host = request.host_url.rstrip("/")
     if host.startswith("http://") and ("pythonanywhere.com" in host or "onrender.com" in host):
