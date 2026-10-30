@@ -258,40 +258,49 @@ def init_telegram_bot():
 
     @bot.message_handler(commands=["start", "help"])
     def handle_start(message):
-        rekap = db.get_rekap_bulanan()
-        status_db = db.get_status()
-        storage_text = "🟢 Google Sheets" if status_db["is_sheets"] else "🔵 SQLite Local"
+        try:
+            logger.info(f"[TELEGRAM] Menerima /start dari chat ID: {message.chat.id}")
+            rekap = db.get_rekap_bulanan()
+            status_db = db.get_status()
+            storage_text = "🟢 Google Sheets" if status_db["is_sheets"] else "🔵 SQLite Local"
 
-        pesan = (
-            "🛵 <b>Finance Kepin - Personal Finance & ShopeeFood Tracker</b>\n"
-            "<i>Sistem Multi-Dompet & Asisten Driver Pintar</i>\n"
-            f"Database: <b>{storage_text}</b>\n\n"
-            "<b>📋 DAFTAR PERINTAH BOT:</b>\n\n"
-            "1️⃣ <b>Cek Saldo Semua Dompet:</b>\n"
-            "<code>/dompet</code> atau <code>/saldo</code>\n"
-            "<i>Melihat rincian saldo Kas Tunai, BRI, & Blu BCA</i>\n\n"
-            "2️⃣ <b>Pemasukan Kas:</b>\n"
-            "<code>/masuk [kategori] [nominal] [catatan] [dompet]</code>\n"
-            "<i>Contoh:</i> <code>/masuk gaji 3000000 bonus bri</code>\n\n"
-            "3️⃣ <b>Pengeluaran Kas:</b>\n"
-            "<code>/keluar [kategori] [nominal] [catatan] [dompet]</code>\n"
-            "<i>Contoh:</i> <code>/keluar makan 15000 warteg tunai</code>\n"
-            "<i>Contoh:</i> <code>/keluar bensin 20000 pertalite bri</code>\n\n"
-            "4️⃣ <b>Pindah Dana / Transfer Antar Dompet:</b>\n"
-            "<code>/transfer [asal] [tujuan] [nominal] [catatan]</code>\n"
-            "<i>Contoh setor tunai:</i> <code>/transfer tunai bri 40000 setor atm</code>\n"
-            "<i>Contoh tabung ke Blu:</i> <code>/transfer bri blu 200000 alokasi tabungan</code>\n\n"
-            "5️⃣ <b>Catat Tarikan ShopeeFood:</b>\n"
-            "<code>/ojol [omzet] [bensin] [order] [odo_awal] [odo_akhir]</code>\n"
-            "<i>Contoh:</i> <code>/ojol 61000 15000 7 4818 4907</code>\n"
-            "<i>(Laba kas otomatis masuk ke Kas Tunai!)</i>\n\n"
-            "6️⃣ <b>Rekap Bulanan:</b>\n"
-            "<code>/rekap</code>\n\n"
-            f"💰 <b>Total Saldo Bersih:</b> {format_rupiah(rekap['saldo_total'])}\n"
-            f"🎯 <b>ShopeeFood Bulan Ini:</b> {format_rupiah(rekap['total_laba_kas_ojol'])} "
-            f"({rekap['pct_utama']}% dari Rp1 Juta)"
-        )
-        bot.reply_to(message, pesan)
+            pesan = (
+                "🛵 <b>Finance Kepin - Personal Finance & ShopeeFood Tracker</b>\n"
+                "<i>Sistem Multi-Dompet & Asisten Driver Pintar</i>\n"
+                f"Database: <b>{storage_text}</b>\n\n"
+                "<b>📋 DAFTAR PERINTAH BOT:</b>\n\n"
+                "1️⃣ <b>Cek Saldo Semua Dompet:</b>\n"
+                "<code>/dompet</code> atau <code>/saldo</code>\n"
+                "<i>Melihat rincian saldo Kas Tunai, BRI, & Blu BCA</i>\n\n"
+                "2️⃣ <b>Pemasukan Kas:</b>\n"
+                "<code>/masuk [kategori] [nominal] [catatan] [dompet]</code>\n"
+                "<i>Contoh:</i> <code>/masuk gaji 3000000 bonus bri</code>\n\n"
+                "3️⃣ <b>Pengeluaran Kas:</b>\n"
+                "<code>/keluar [kategori] [nominal] [catatan] [dompet]</code>\n"
+                "<i>Contoh:</i> <code>/keluar makan 15000 warteg tunai</code>\n"
+                "<i>Contoh:</i> <code>/keluar bensin 20000 pertalite bri</code>\n\n"
+                "4️⃣ <b>Pindah Dana / Transfer Antar Dompet:</b>\n"
+                "<code>/transfer [asal] [tujuan] [nominal] [catatan]</code>\n"
+                "<i>Contoh setor tunai:</i> <code>/transfer tunai bri 40000 setor atm</code>\n"
+                "<i>Contoh tabung ke Blu:</i> <code>/transfer bri blu 200000 alokasi tabungan</code>\n\n"
+                "5️⃣ <b>Catat Tarikan ShopeeFood:</b>\n"
+                "<code>/ojol [omzet] [bensin] [order] [odo_awal] [odo_akhir]</code>\n"
+                "<i>Contoh:</i> <code>/ojol 61000 15000 7 4818 4907</code>\n"
+                "<i>(Laba kas otomatis masuk ke Kas Tunai!)</i>\n\n"
+                "6️⃣ <b>Rekap Bulanan:</b>\n"
+                "<code>/rekap</code>\n\n"
+                f"💰 <b>Total Saldo Bersih:</b> {format_rupiah(rekap['saldo_total'])}\n"
+                f"🎯 <b>ShopeeFood Bulan Ini:</b> {format_rupiah(rekap['total_laba_kas_ojol'])} "
+                f"({rekap['pct_utama']}% dari Rp1 Juta)"
+            )
+            bot.reply_to(message, pesan)
+            logger.info(f"[TELEGRAM] Balasan /start berhasil dikirim ke {message.chat.id}")
+        except Exception as e:
+            logger.error(f"[TELEGRAM ERROR in handle_start] {e}", exc_info=True)
+            try:
+                bot.reply_to(message, f"⚠️ Gagal memproses perintah: {e}")
+            except Exception:
+                pass
 
     @bot.message_handler(commands=["dompet", "saldo"])
     def handle_dompet(message):
@@ -953,6 +962,45 @@ def webhook():
     except Exception as e:
         logger.error(f"[WEBHOOK ERROR] {e}", exc_info=True)
         return "Error", 500
+
+
+@app.route("/test_bot", methods=["GET"])
+def test_bot():
+    """Endpoint diagnostik untuk mengecek koneksi bot ke Telegram API."""
+    import traceback
+    global bot
+    if not bot:
+        init_telegram_bot()
+    try:
+        import telebot
+        me = bot.get_me()
+        return jsonify({
+            "success": True,
+            "bot_id": me.id,
+            "bot_username": me.username,
+            "bot_first_name": me.first_name,
+            "proxy": getattr(telebot.apihelper, "proxy", None)
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }), 500
+
+
+@app.route("/api/debug_log", methods=["GET"])
+def debug_log():
+    """Membaca 50 baris terakhir dari file error log PythonAnywhere."""
+    for log_path in [
+        "/var/log/kepinfinance.pythonanywhere.com.error.log",
+        "/var/log/kepinfinance.pythonanywhere.com.server.log"
+    ]:
+        if os.path.exists(log_path):
+            with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = f.readlines()
+                return "".join(lines[-60:]), 200, {"Content-Type": "text/plain; charset=utf-8"}
+    return "Log file not found", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 @app.route("/set_webhook", methods=["GET"])
