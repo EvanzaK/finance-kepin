@@ -591,7 +591,12 @@ def run_telegram_bot_background():
 
 
 init_telegram_bot()
-run_telegram_bot_background()
+
+USE_WEBHOOK = os.getenv("USE_WEBHOOK", "false").lower() in ["true", "1", "yes"]
+if not USE_WEBHOOK:
+    run_telegram_bot_background()
+else:
+    logger.info("[TELEGRAM BOT] Mode Webhook aktif (Background polling dinonaktifkan).")
 
 
 # =====================================================================
@@ -915,6 +920,29 @@ def webhook():
         bot.process_new_updates([update])
         return "OK", 200
     return "Forbidden", 403
+
+
+@app.route("/set_webhook", methods=["GET"])
+def set_webhook():
+    """Mengaktifkan Webhook Telegram secara instan dari browser."""
+    if not bot:
+        return jsonify({"success": False, "error": "Bot belum dikonfigurasi"}), 400
+
+    host = request.host_url.rstrip("/")
+    if host.startswith("http://") and ("pythonanywhere.com" in host or "onrender.com" in host):
+        host = host.replace("http://", "https://")
+
+    webhook_url = f"{host}/webhook"
+    try:
+        bot.remove_webhook()
+        success = bot.set_webhook(url=webhook_url)
+        return jsonify({
+            "success": success,
+            "webhook_url": webhook_url,
+            "message": "✅ Webhook Telegram berhasil aktif! Bot kini merespons 24 jam nonstop."
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # =====================================================================
