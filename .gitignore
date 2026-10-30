@@ -1,6 +1,7 @@
 .env
 credentials.json
 keuangan.db
+RENDER_ENV_SETUP.txt
 __pycache__/
 *.pyc
 .system_generated/
