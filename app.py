@@ -916,16 +916,27 @@ def api_delete_ojol(ojol_id):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     """Webhook endpoint untuk Telegram jika dijalankan di server dengan domain SSL."""
+    global bot
+    if not bot:
+        init_telegram_bot()
+
     if not bot:
         return "Bot is not configured", 400
 
-    if request.headers.get("content-type") == "application/json":
-        import telebot
-        json_string = request.get_data().decode("utf-8")
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return "OK", 200
-    return "Forbidden", 403
+    try:
+        ct = request.headers.get("content-type", "").lower()
+        if "application/json" in ct or request.is_json:
+            import telebot
+            json_string = request.get_data().decode("utf-8")
+            if json_string and json_string.strip():
+                update = telebot.types.Update.de_json(json_string)
+                if update:
+                    bot.process_new_updates([update])
+            return "OK", 200
+        return "Forbidden", 403
+    except Exception as e:
+        logger.error(f"[WEBHOOK ERROR] {e}", exc_info=True)
+        return "Error", 500
 
 
 @app.route("/set_webhook", methods=["GET"])
