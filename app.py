@@ -232,6 +232,22 @@ def init_telegram_bot():
 
     try:
         import telebot
+        from telebot import apihelper
+
+        # Konfigurasi Proxy resmi khusus PythonAnywhere Free Tier
+        proxy_url = os.environ.get("https_proxy") or os.environ.get("http_proxy")
+        if not proxy_url:
+            file_path = os.path.abspath(__file__).lower()
+            if "pythonanywhere" in file_path or os.path.exists("/var/log/pythonanywhere") or os.path.exists("/home/kepinfinance"):
+                proxy_url = "http://proxy.server:3128"
+
+        if proxy_url:
+            apihelper.proxy = {
+                "http": proxy_url,
+                "https": proxy_url
+            }
+            logger.info(f"[TELEGRAM BOT] Proxy aktif untuk PythonAnywhere: {proxy_url}")
+
         bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
         logger.info("[TELEGRAM BOT] Bot client berhasil diinisialisasi.")
         bot_init_error = None
