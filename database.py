@@ -99,6 +99,54 @@ def hitung_metrik_ojol(
     }
 
 
+def resolve_periode_months(periode: Optional[str]) -> Optional[List[str]]:
+    """
+    Mengubah parameter periode/bulan menjadi daftar bulan format 'YYYY-MM'.
+    - None / 'bulan_ini' -> [bulan berjalan]
+    - 'bulan_lalu' -> [1 bulan lalu]
+    - '3bulan' / '3_bulan' -> [2 bulan lalu, 1 bulan lalu, bulan berjalan]
+    - 'all' / 'semua' -> None (tanpa filter tanggal)
+    - 'YYYY-MM' -> ['YYYY-MM']
+    """
+    if not periode:
+        return [datetime.datetime.now().strftime("%Y-%m")]
+
+    p = str(periode).strip().lower()
+    if p in ["all", "semua", "all_time"]:
+        return None
+
+    now = datetime.datetime.now()
+    cur_year = now.year
+    cur_month = now.month
+
+    def get_ym(year: int, month: int) -> str:
+        return f"{year:04d}-{month:02d}"
+
+    def get_prev_ym(year: int, month: int, back: int) -> str:
+        m = month - back
+        y = year
+        while m <= 0:
+            m += 12
+            y -= 1
+        return get_ym(y, m)
+
+    if p in ["bulan_ini", "current", "this_month"]:
+        return [get_ym(cur_year, cur_month)]
+    elif p in ["bulan_lalu", "last_month", "prev"]:
+        return [get_prev_ym(cur_year, cur_month, 1)]
+    elif p in ["3bulan", "3_bulan", "last_3_months"]:
+        return [
+            get_prev_ym(cur_year, cur_month, 2),
+            get_prev_ym(cur_year, cur_month, 1),
+            get_ym(cur_year, cur_month)
+        ]
+    elif len(p) == 7 and p[4] == "-":
+        return [p]
+
+    return [get_ym(cur_year, cur_month)]
+
+
+
 class SQLiteStorage:
     """Implementasi backend penyimpanan lokal SQLite (keuangan.db) dengan Multi-Dompet."""
 
@@ -309,12 +357,40 @@ class SQLiteStorage:
             dompet_tujuan=dompet_tujuan
         )
 
-    def get_transaksi(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_transaksi(
+        self,
+        limit: Optional[int] = None,
+        bulan: Optional[str] = None,
+        tipe: Optional[str] = None,
+        kategori: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         query = "SELECT * FROM Transaksi"
+        where_clauses = []
         params = []
+
         if bulan:
-            query += " WHERE tanggal LIKE ?"
-            params.append(f"{bulan}%")
+            months = resolve_periode_months(bulan)
+            if months is not None:
+                if len(months) == 1:
+                    where_clauses.append("tanggal LIKE ?")
+                    params.append(f"{months[0]}%")
+                else:
+                    month_conds = " OR ".join(["tanggal LIKE ?" for _ in months])
+                    where_clauses.append(f"({month_conds})")
+                    for m in months:
+                        params.append(f"{m}%")
+
+        if tipe and str(tipe).strip().lower() != "semua":
+            where_clauses.append("LOWER(tipe) = ?")
+            params.append(str(tipe).strip().lower())
+
+        if kategori and str(kategori).strip().lower() != "semua":
+            where_clauses.append("LOWER(kategori) = ?")
+            params.append(str(kategori).strip().lower())
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+
         query += " ORDER BY tanggal DESC, id DESC"
         if limit:
             query += f" LIMIT {int(limit)}"
@@ -396,10 +472,24 @@ class SQLiteStorage:
 
     def get_log_ojol(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
         query = "SELECT * FROM Log_Ojol"
+        where_clauses = []
         params = []
+
         if bulan:
-            query += " WHERE tanggal LIKE ?"
-            params.append(f"{bulan}%")
+            months = resolve_periode_months(bulan)
+            if months is not None:
+                if len(months) == 1:
+                    where_clauses.append("tanggal LIKE ?")
+                    params.append(f"{months[0]}%")
+                else:
+                    month_conds = " OR ".join(["tanggal LIKE ?" for _ in months])
+                    where_clauses.append(f"({month_conds})")
+                    for m in months:
+                        params.append(f"{m}%")
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+
         query += " ORDER BY tanggal DESC, id DESC"
         if limit:
             query += f" LIMIT {int(limit)}"
@@ -625,20 +715,39 @@ class GoogleSheetsStorage:
             dompet_tujuan=dompet_tujuan
         )
 
-    def get_transaksi(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_transaksi(
+        self,
+        limit: Optional[int] = None,
+        bulan: Optional[str] = None,
+        tipe: Optional[str] = None,
+        kategori: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         records = self.ws_transaksi.get_all_records()
+        months = resolve_periode_months(bulan) if bulan else None
         results = []
         for r in records:
             tgl = str(r.get("tanggal", ""))
-            if bulan and not tgl.startswith(bulan):
-                continue
+            if months is not None:
+                if not any(tgl.startswith(m) for m in months):
+                    continue
+
+            r_tipe = str(r.get("tipe", "")).strip()
+            if tipe and str(tipe).strip().lower() != "semua":
+                if r_tipe.lower() != str(tipe).strip().lower():
+                    continue
+
+            r_kat = str(r.get("kategori", "")).strip()
+            if kategori and str(kategori).strip().lower() != "semua":
+                if r_kat.lower() != str(kategori).strip().lower():
+                    continue
+
             domp = str(r.get("dompet", "")).strip() or "Kas Tunai"
             domp_tuj = str(r.get("dompet_tujuan", "")).strip()
             results.append({
                 "id": int(r.get("id", 0)),
                 "tanggal": tgl,
-                "tipe": str(r.get("tipe", "")),
-                "kategori": str(r.get("kategori", "")),
+                "tipe": r_tipe,
+                "kategori": r_kat,
                 "nominal": int(r.get("nominal", 0)),
                 "catatan": str(r.get("catatan", "")),
                 "dompet": domp,
@@ -716,11 +825,13 @@ class GoogleSheetsStorage:
 
     def get_log_ojol(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
         records = self.ws_ojol.get_all_records()
+        months = resolve_periode_months(bulan) if bulan else None
         results = []
         for r in records:
             tgl = str(r.get("tanggal", ""))
-            if bulan and not tgl.startswith(bulan):
-                continue
+            if months is not None:
+                if not any(tgl.startswith(m) for m in months):
+                    continue
             item = {
                 "id": int(r.get("id", 0)),
                 "tanggal": tgl,
@@ -843,8 +954,14 @@ class DataManager:
     ) -> int:
         return self.storage.add_transfer(dompet_asal, dompet_tujuan, nominal, catatan, tanggal)
 
-    def get_transaksi(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
-        return self.storage.get_transaksi(limit, bulan)
+    def get_transaksi(
+        self,
+        limit: Optional[int] = None,
+        bulan: Optional[str] = None,
+        tipe: Optional[str] = None,
+        kategori: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        return self.storage.get_transaksi(limit=limit, bulan=bulan, tipe=tipe, kategori=kategori)
 
     def delete_transaksi(self, transaksi_id: int) -> bool:
         return self.storage.delete_transaksi(transaksi_id)
@@ -866,10 +983,16 @@ class DataManager:
         )
 
     def get_log_ojol(self, limit: Optional[int] = None, bulan: Optional[str] = None) -> List[Dict[str, Any]]:
-        return self.storage.get_log_ojol(limit, bulan)
+        return self.storage.get_log_ojol(limit=limit, bulan=bulan)
 
     def delete_log_ojol(self, ojol_id: int) -> bool:
         return self.storage.delete_log_ojol(ojol_id)
+
+    def get_categories(self) -> List[str]:
+        """Mendapatkan daftar semua kategori unik dari transaksi."""
+        semua = self.get_transaksi()
+        cats = sorted(list(set(t["kategori"].strip().title() for t in semua if t.get("kategori"))))
+        return cats
 
     # --- Kalkulasi Saldo Per-Dompet & Rekap ---
     def get_saldo_dompet(self) -> List[Dict[str, Any]]:
@@ -907,7 +1030,7 @@ class DataManager:
         Rekap komprehensif: Saldo Total Riil (sum seluruh dompet) + Arus Kas Bulan Ini + ShopeeFood Tracker
         """
         if not bulan:
-            bulan = datetime.datetime.now().strftime("%Y-%m")
+            bulan = "bulan_ini"
 
         dompet_list = self.get_saldo_dompet()
         saldo_total = sum(d["saldo_sekarang"] for d in dompet_list)
@@ -917,14 +1040,20 @@ class DataManager:
         total_masuk_kumulatif = sum(t["nominal"] for t in semua_transaksi if t["tipe"].lower() == "pemasukan")
         total_keluar_kumulatif = sum(t["nominal"] for t in semua_transaksi if t["tipe"].lower() == "pengeluaran")
 
-        # Transaksi bulan ini (Transfer tidak dihitung sebagai pemasukan/pengeluaran baru, hanya realokasi)
-        transaksi_bulan = [t for t in semua_transaksi if t["tanggal"].startswith(bulan)]
+        months = resolve_periode_months(bulan)
+        if months is None:
+            transaksi_bulan = semua_transaksi
+            semua_ojol = self.get_log_ojol()
+            ojol_bulan = semua_ojol
+            label_periode = "Semua Waktu"
+        else:
+            transaksi_bulan = [t for t in semua_transaksi if any(t["tanggal"].startswith(m) for m in months)]
+            semua_ojol = self.get_log_ojol()
+            ojol_bulan = [o for o in semua_ojol if any(o["tanggal"].startswith(m) for m in months)]
+            label_periode = ", ".join(months)
+
         masuk_bulan = sum(t["nominal"] for t in transaksi_bulan if t["tipe"].lower() == "pemasukan")
         keluar_bulan = sum(t["nominal"] for t in transaksi_bulan if t["tipe"].lower() == "pengeluaran")
-
-        # Log Ojol
-        semua_ojol = self.get_log_ojol()
-        ojol_bulan = [o for o in semua_ojol if o["tanggal"].startswith(bulan)]
 
         total_omzet_ojol = sum(o["omzet_kotor"] for o in ojol_bulan)
         total_bensin_kas_ojol = sum(o["modal_bensin"] for o in ojol_bulan)
@@ -947,7 +1076,7 @@ class DataManager:
         shift_dibutuhkan = (sisa_target_utama + asumsi_per_shift - 1) // asumsi_per_shift if sisa_target_utama > 0 else 0
 
         return {
-            "bulan": bulan,
+            "bulan": label_periode,
             "saldo_total": saldo_total,
             "total_saldo_awal": total_saldo_awal,
             "dompet_list": dompet_list,
@@ -976,9 +1105,9 @@ class DataManager:
             "count_ojol": len(ojol_bulan)
         }
 
-    def get_chart_data(self, bulan: Optional[str] = None) -> Dict[str, Any]:
+    def get_chart_data(self, bulan: Optional[str] = None, kategori: Optional[str] = None) -> Dict[str, Any]:
         if not bulan:
-            bulan = datetime.datetime.now().strftime("%Y-%m")
+            bulan = "bulan_ini"
 
         ojol_list = self.get_log_ojol(bulan=bulan)
         ojol_sorted = sorted(ojol_list, key=lambda x: x["tanggal"])
@@ -990,10 +1119,16 @@ class DataManager:
 
         transaksi_list = self.get_transaksi(bulan=bulan)
         pengeluaran_by_cat: Dict[str, int] = {}
+        all_categories = set()
+        total_pengeluaran = 0
+
         for t in transaksi_list:
             if t["tipe"].lower() == "pengeluaran":
                 cat = t["kategori"].strip().title() if t["kategori"] else "Lain-Lain"
-                pengeluaran_by_cat[cat] = pengeluaran_by_cat.get(cat, 0) + t["nominal"]
+                all_categories.add(cat)
+                if not kategori or str(kategori).strip().lower() == "semua" or cat.lower() == str(kategori).strip().lower():
+                    pengeluaran_by_cat[cat] = pengeluaran_by_cat.get(cat, 0) + t["nominal"]
+                    total_pengeluaran += t["nominal"]
 
         cat_labels = list(pengeluaran_by_cat.keys())
         cat_values = list(pengeluaran_by_cat.values())
@@ -1003,11 +1138,15 @@ class DataManager:
                 "labels": ojol_labels,
                 "laba_kas": ojol_laba_kas,
                 "jarak_km": ojol_jarak_km,
-                "laba_bersih": ojol_laba_bersih
+                "laba_bersih": ojol_laba_bersih,
+                "total_laba_kas": sum(ojol_laba_kas),
+                "total_km": sum(ojol_jarak_km)
             },
             "kategori_chart": {
                 "labels": cat_labels,
-                "values": cat_values
+                "values": cat_values,
+                "total_pengeluaran": total_pengeluaran,
+                "available_categories": sorted(list(all_categories))
             }
         }
 

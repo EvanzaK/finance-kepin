@@ -203,16 +203,23 @@
         
         <!-- Card 1: Saldo Bersih Total (Sum seluruh dompet) -->
         <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-2xl bg-[#eff6ff] flex items-center justify-center text-[#2563eb]">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-[#eff6ff] flex items-center justify-center text-[#2563eb]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Saldo Bersih Total</span>
+              </div>
             </div>
-            <div>
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Saldo Bersih Total</span>
-            </div>
+            <!-- Eye Toggle Button untuk Saldo & Pos Rekening -->
+            <button id="btnToggleSaldo" onclick="toggleSensorSaldo()" class="p-1.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Sembunyikan / Tampilkan Nominal Saldo">
+              <svg id="eyeSaldoOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg id="eyeSaldoClosed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+            </button>
           </div>
           <div class="mt-4">
-            <div class="text-2xl font-extrabold tracking-tight text-slate-900">
+            <div class="text-2xl font-extrabold tracking-tight text-slate-900 sensor-saldo" data-real="{{ format_rupiah(rekap.saldo_total) }}">
               {{ format_rupiah(rekap.saldo_total) }}
             </div>
             <p class="text-[11px] text-slate-400 mt-1">
@@ -263,22 +270,29 @@
 
         <!-- Card 4: Laba Kas ShopeeFood -->
         <div class="custom-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-2xl bg-[#fff4ed] flex items-center justify-center text-[#ff6426]">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-[#fff4ed] flex items-center justify-center text-[#ff6426]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[#ff6426]">Laba Kas ShopeeFood</span>
+              </div>
             </div>
-            <div>
-              <span class="text-[11px] font-bold uppercase tracking-wider text-[#ff6426]">Laba Kas ShopeeFood</span>
-            </div>
+            <!-- Eye Toggle Button untuk ShopeeFood -->
+            <button id="btnToggleOjol" onclick="toggleSensorOjol()" class="p-1.5 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition" title="Sembunyikan / Tampilkan Nominal ShopeeFood">
+              <svg id="eyeOjolOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg id="eyeOjolClosed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+            </button>
           </div>
           <div class="mt-4">
-            <div class="text-2xl font-extrabold tracking-tight text-[#ff6426]">
+            <div class="text-2xl font-extrabold tracking-tight text-[#ff6426] sensor-ojol" data-real="{{ format_rupiah(rekap.total_laba_kas_ojol) }}">
               {{ format_rupiah(rekap.total_laba_kas_ojol) }}
             </div>
             <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-2 font-medium">
               <span>📋 <b>{{ rekap.total_order_ojol }}</b> order</span>
               <span>🛣️ <b>{{ rekap.total_km_ojol }}</b> km</span>
-              <span>⛽ <b>{{ format_rupiah(rekap.rata_rp_per_km) }}/km</b></span>
+              <span>⛽ <b class="sensor-ojol" data-real="{{ format_rupiah(rekap.rata_rp_per_km) }}/km">{{ format_rupiah(rekap.rata_rp_per_km) }}/km</b></span>
             </p>
           </div>
         </div>
@@ -306,7 +320,12 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" onclick="toggleSensorSaldo()" id="btnToggleDompet" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Sembunyikan / Tampilkan Nominal Saldo">
+              <svg id="eyeDompetOpen" class="w-3.5 h-3.5 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg id="eyeDompetClosed" class="w-3.5 h-3.5 mr-1 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+              <span id="labelToggleDompet">Sensor Saldo</span>
+            </button>
             <button onclick="bukaModalTransfer()" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition">
               <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
               Pindah Dana / Transfer
@@ -330,12 +349,12 @@
             </div>
             <div class="mt-3">
               <h4 class="text-xs font-bold text-slate-800 truncate" title="{{ d.nama }}">{{ d.nama }}</h4>
-              <div class="text-lg font-extrabold text-slate-900 mt-1">
+              <div class="text-lg font-extrabold text-slate-900 mt-1 sensor-saldo" data-real="{{ format_rupiah(d.saldo_sekarang) }}">
                 {{ format_rupiah(d.saldo_sekarang) }}
               </div>
               <p class="text-[10px] text-slate-400 mt-0.5 truncate" title="{{ d.catatan }}">
                 {% if d.saldo_awal > 0 %}
-                  Awal: {{ format_rupiah(d.saldo_awal) }}
+                  <span class="sensor-saldo-sub" data-real="Awal: {{ format_rupiah(d.saldo_awal) }}">Awal: {{ format_rupiah(d.saldo_awal) }}</span>
                 {% else %}
                   {{ d.catatan or 'Siap digunakan' }}
                 {% endif %}
@@ -377,7 +396,7 @@
             <div class="text-xs">
               {% if rekap.sisa_target_utama > 0 %}
                 <div class="text-slate-800 font-bold">
-                  Kurang <span class="text-amber-700">{{ format_rupiah(rekap.sisa_target_utama) }}</span> lagi
+                  Kurang <span class="text-amber-700 sensor-ojol" data-real="{{ format_rupiah(rekap.sisa_target_utama) }}">{{ format_rupiah(rekap.sisa_target_utama) }}</span> lagi
                 </div>
                 <div class="text-[11px] text-slate-500">
                   Butuh sekitar <b>{{ rekap.shift_dibutuhkan }} hari</b> lagi (asumsi Rp 46.000/hari)
@@ -408,8 +427,8 @@
               <div class="h-full bg-[#10b981] rounded-full transition-all duration-700" style="width: {{ rekap.pct_milestone }}%"></div>
             </div>
             <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
-              <span>Terkumpul: {{ format_rupiah(rekap.total_laba_kas_ojol) }}</span>
-              <span>Sisa: {{ format_rupiah(rekap.sisa_target_milestone) }}</span>
+              <span>Terkumpul: <b class="sensor-ojol" data-real="{{ format_rupiah(rekap.total_laba_kas_ojol) }}">{{ format_rupiah(rekap.total_laba_kas_ojol) }}</b></span>
+              <span>Sisa: <b class="sensor-ojol" data-real="{{ format_rupiah(rekap.sisa_target_milestone) }}">{{ format_rupiah(rekap.sisa_target_milestone) }}</b></span>
             </div>
           </div>
 
@@ -426,8 +445,8 @@
               <div class="h-full bg-[#7c3aed] rounded-full transition-all duration-700" style="width: {{ rekap.pct_utama }}%"></div>
             </div>
             <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
-              <span>Terkumpul: {{ format_rupiah(rekap.total_laba_kas_ojol) }}</span>
-              <span>Sisa: {{ format_rupiah(rekap.sisa_target_utama) }}</span>
+              <span>Terkumpul: <b class="sensor-ojol" data-real="{{ format_rupiah(rekap.total_laba_kas_ojol) }}">{{ format_rupiah(rekap.total_laba_kas_ojol) }}</b></span>
+              <span>Sisa: <b class="sensor-ojol" data-real="{{ format_rupiah(rekap.sisa_target_utama) }}">{{ format_rupiah(rekap.sisa_target_utama) }}</b></span>
             </div>
           </div>
 
@@ -438,13 +457,13 @@
           <div class="flex items-center gap-1.5 text-slate-600">
             <span class="text-blue-500 font-bold">🔧</span>
             <span>Dana Servis Disisihkan:</span>
-            <span class="text-amber-600 font-bold">{{ format_rupiah(rekap.total_dana_servis) }}</span>
+            <span class="text-amber-600 font-bold sensor-ojol" data-real="{{ format_rupiah(rekap.total_dana_servis) }}">{{ format_rupiah(rekap.total_dana_servis) }}</span>
             <span class="text-[10px] text-slate-400">(Rp150/km)</span>
           </div>
           <div class="flex items-center gap-1.5 text-slate-600">
             <span class="text-emerald-500 font-bold">🏷️</span>
             <span>Laba Murni (Real):</span>
-            <span class="text-emerald-700 font-bold">{{ format_rupiah(rekap.total_laba_bersih_murni) }}</span>
+            <span class="text-emerald-700 font-bold sensor-ojol" data-real="{{ format_rupiah(rekap.total_laba_bersih_murni) }}">{{ format_rupiah(rekap.total_laba_bersih_murni) }}</span>
             <span class="text-[10px] text-slate-400">(Potong servis & BBM)</span>
           </div>
           <div class="flex items-center gap-1.5 text-slate-600">
@@ -465,10 +484,16 @@
           <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h3 class="text-sm font-bold text-slate-900">Tren Harian ShopeeFood</h3>
-              <p class="text-[11px] text-slate-400">Perbandingan laba kas di tangan (Rp) dan jarak tempuh (km)</p>
+              <p id="subJudulOjol" class="text-[11px] text-slate-400">Perbandingan laba kas di tangan (Rp) dan jarak tempuh (km)</p>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium">Bulan Ini ▾</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400 font-semibold hidden sm:inline">Periode:</span>
+              <select id="filterOjolPeriode" onchange="ubahPeriodeOjol(this.value)" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 cursor-pointer focus:ring-2 focus:ring-orange-500 focus:outline-none transition">
+                <option value="bulan_ini">Bulan Ini</option>
+                <option value="bulan_lalu">Bulan Lalu</option>
+                <option value="3bulan">3 Bulan Terakhir</option>
+                <option value="all">Semua Data</option>
+              </select>
             </div>
           </div>
 
@@ -490,12 +515,27 @@
 
         <!-- Chart 2: Proporsi Pengeluaran (Col-span 5) -->
         <div class="lg:col-span-5 custom-card rounded-2xl p-5 flex flex-col justify-between">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
             <div>
               <h3 class="text-sm font-bold text-slate-900">Proporsi Pengeluaran</h3>
-              <p class="text-[11px] text-slate-400">Distribusi pengeluaran berdasarkan kategori</p>
+              <p id="subJudulPengeluaran" class="text-[11px] text-slate-400">Distribusi pengeluaran berdasarkan kategori</p>
             </div>
-            <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium">Kategori ▾</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <select id="filterPengeluaranPeriode" onchange="ubahPeriodePengeluaran(this.value)" class="text-xs px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none transition" title="Filter Periode Pengeluaran">
+                <option value="bulan_ini">Bulan Ini</option>
+                <option value="bulan_lalu">Bulan Lalu</option>
+                <option value="3bulan">3 Bulan Terakhir</option>
+                <option value="all">Semua Waktu</option>
+              </select>
+              <select id="filterKategoriSelect" onchange="ubahKategoriPengeluaran(this.value)" class="text-xs px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none transition" title="Filter Kategori">
+                <option value="Semua">Semua Kategori</option>
+                {% for cat in categories %}
+                  {% if cat|lower not in ['gaji', 'shopeefood', 'transfer antar dompet'] %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
           </div>
 
           <div class="flex-1 flex flex-col sm:flex-row items-center justify-center gap-4 py-2">
@@ -503,7 +543,7 @@
               <canvas id="kategoriChart"></canvas>
               <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span class="text-[10px] text-slate-400 font-medium">Total</span>
-                <span class="text-sm font-extrabold text-slate-800">{{ format_rupiah(rekap.pengeluaran_bulan_ini) }}</span>
+                <span id="centerTotalPengeluaran" class="text-sm font-extrabold text-slate-800">{{ format_rupiah(rekap.pengeluaran_bulan_ini) }}</span>
               </div>
             </div>
 
@@ -566,13 +606,13 @@
                 <td class="py-3.5 px-3 whitespace-nowrap">{{ item.jumlah_order }} order</td>
                 <td class="py-3.5 px-3 whitespace-nowrap text-slate-500 font-mono">{{ item.odo_awal }} ➡️ {{ item.odo_akhir }}</td>
                 <td class="py-3.5 px-3 whitespace-nowrap font-bold text-[#0284c7]">{{ item.jarak_km }} km</td>
-                <td class="py-3.5 px-3 whitespace-nowrap font-semibold">{{ format_rupiah(item.omzet_kotor) }}</td>
-                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-rose-500">{{ format_rupiah(item.modal_bensin) }}</td>
-                <td class="py-3.5 px-3 whitespace-nowrap font-bold text-[#ff6426]">{{ format_rupiah(item.laba_kas) }}</td>
-                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-emerald-600">{{ format_rupiah(item.dana_servis) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold sensor-ojol" data-real="{{ format_rupiah(item.omzet_kotor) }}">{{ format_rupiah(item.omzet_kotor) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-rose-500 sensor-ojol" data-real="{{ format_rupiah(item.modal_bensin) }}">{{ format_rupiah(item.modal_bensin) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-bold text-[#ff6426] sensor-ojol" data-real="{{ format_rupiah(item.laba_kas) }}">{{ format_rupiah(item.laba_kas) }}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-emerald-600 sensor-ojol" data-real="{{ format_rupiah(item.dana_servis) }}">{{ format_rupiah(item.dana_servis) }}</td>
                 <td class="py-3.5 px-3 whitespace-nowrap">
                   <div class="flex items-center gap-2">
-                    <span class="font-bold text-slate-800">{{ format_rupiah(item.laba_bersih_murni) }}</span>
+                    <span class="font-bold text-slate-800 sensor-ojol" data-real="{{ format_rupiah(item.laba_bersih_murni) }}">{{ format_rupiah(item.laba_bersih_murni) }}</span>
                     {% if item.rp_per_km >= 1200 %}
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         🟢 {{ format_rupiah(item.rp_per_km) }}/km
@@ -606,7 +646,7 @@
         </div>
       </section>
 
-      <!-- ================= ROW 5: TABLE 10 TRANSAKSI ARUS KAS TERAKHIR ================= -->
+      <!-- ================= ROW 5: TABLE TRANSAKSI ARUS KAS & PENGELUARAN ================= -->
       <section id="tabelTransaksi" class="custom-card rounded-2xl overflow-hidden">
         
         <div class="p-4 lg:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -616,12 +656,12 @@
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-sm font-bold text-slate-900">10 Transaksi Arus Kas Terakhir</h3>
-                <span class="px-2 py-0.5 text-[10px] font-bold bg-sky-50 text-sky-700 rounded-md border border-sky-200">
+                <h3 class="text-sm font-bold text-slate-900">Riwayat Transaksi & Pengeluaran</h3>
+                <span id="badgeTrxCount" class="px-2 py-0.5 text-[10px] font-bold bg-sky-50 text-sky-700 rounded-md border border-sky-200">
                   {{ transaksi|length }} Transaksi
                 </span>
               </div>
-              <p class="text-[11px] text-slate-400 mt-0.5">Pemasukan, pengeluaran, dan riwayat pindah dana antar dompet.</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Filter pengeluaran dan arus kas berdasarkan rentang waktu dan kategori.</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -633,6 +673,45 @@
               <svg class="w-3.5 h-3.5 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
               Tambah Transaksi
             </button>
+          </div>
+        </div>
+
+        <!-- Toolbar Filter Interaktif Transaksi -->
+        <div class="p-3 bg-[#f8fafc] border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <!-- Filter Tipe Tab Buttons -->
+          <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-xs font-semibold">
+            <button type="button" onclick="setFilterTipe('Semua', this)" class="btn-filter-tipe px-3 py-1 rounded-lg bg-slate-900 text-white transition text-[11px]">Semua</button>
+            <button type="button" onclick="setFilterTipe('Pengeluaran', this)" class="btn-filter-tipe px-3 py-1 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition text-[11px]">Pengeluaran</button>
+            <button type="button" onclick="setFilterTipe('Pemasukan', this)" class="btn-filter-tipe px-3 py-1 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition text-[11px]">Pemasukan</button>
+            <button type="button" onclick="setFilterTipe('Transfer', this)" class="btn-filter-tipe px-3 py-1 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition text-[11px]">Transfer</button>
+          </div>
+
+          <!-- Filter Rentang Waktu & Kategori -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold text-[11px]">Periode:</span>
+              <select id="filterTabelPeriode" onchange="muatTransaksiFilter()" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-bold focus:outline-none focus:border-blue-500 shadow-xs">
+                <option value="bulan_ini">Bulan Ini</option>
+                <option value="bulan_lalu">Bulan Lalu</option>
+                <option value="3bulan">3 Bulan Terakhir</option>
+                <option value="all" selected>Semua Waktu</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold text-[11px]">Kategori:</span>
+              <select id="filterTabelKategori" onchange="muatTransaksiFilter()" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-bold focus:outline-none focus:border-blue-500 shadow-xs">
+                <option value="Semua">Semua Kategori</option>
+                {% for cat in categories %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Total Nominal Filter Badge -->
+            <div id="badgeStatTransaksi" class="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
+              Memuat...
+            </div>
           </div>
         </div>
 
@@ -649,7 +728,7 @@
                 <th class="py-3 px-4 text-center">AKSI</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 font-medium">
+            <tbody id="transaksiTbody" class="divide-y divide-slate-100 font-medium">
               {% for item in transaksi %}
               <tr class="hover:bg-slate-50/80 transition">
                 <td class="py-3.5 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">{{ item.tanggal }}</td>
@@ -1067,6 +1146,80 @@
       document.getElementById('sidebarMenu').classList.toggle('hidden');
     }
 
+    // =========================================================================
+    // FITUR HIDE / SHOW (SENSOR NOMINAL)
+    // =========================================================================
+    let isSaldoHidden = localStorage.getItem('hide_saldo_rekening') === 'true';
+    let isOjolHidden = localStorage.getItem('hide_saldo_ojol') === 'true';
+
+    function terapkanSensorSaldo(hidden) {
+      isSaldoHidden = hidden;
+      localStorage.setItem('hide_saldo_rekening', hidden ? 'true' : 'false');
+
+      // 1. Toggle icon di Card Saldo Bersih Total
+      const eyeOpen = document.getElementById('eyeSaldoOpen');
+      const eyeClosed = document.getElementById('eyeSaldoClosed');
+      if (eyeOpen && eyeClosed) {
+        eyeOpen.classList.toggle('hidden', hidden);
+        eyeClosed.classList.toggle('hidden', !hidden);
+      }
+
+      // 2. Toggle icon & teks tombol di Header Pos Rekening
+      const eyeDompetOpen = document.getElementById('eyeDompetOpen');
+      const eyeDompetClosed = document.getElementById('eyeDompetClosed');
+      const labelToggleDompet = document.getElementById('labelToggleDompet');
+      if (eyeDompetOpen && eyeDompetClosed) {
+        eyeDompetOpen.classList.toggle('hidden', hidden);
+        eyeDompetClosed.classList.toggle('hidden', !hidden);
+      }
+      if (labelToggleDompet) {
+        labelToggleDompet.innerText = hidden ? 'Tampilkan Saldo' : 'Sensor Saldo';
+      }
+
+      // 3. Sensor angka pada saldo utama dan pos-pos rekening
+      document.querySelectorAll('.sensor-saldo').forEach(el => {
+        const real = el.getAttribute('data-real');
+        if (real) {
+          el.innerText = hidden ? 'Rp ••••••••' : real;
+        }
+      });
+
+      // 4. Sensor angka sub-saldo (saldo awal)
+      document.querySelectorAll('.sensor-saldo-sub').forEach(el => {
+        const real = el.getAttribute('data-real');
+        if (real) {
+          el.innerText = hidden ? '••••••' : real;
+        }
+      });
+    }
+
+    function toggleSensorSaldo() {
+      terapkanSensorSaldo(!isSaldoHidden);
+    }
+
+    function terapkanSensorOjol(hidden) {
+      isOjolHidden = hidden;
+      localStorage.setItem('hide_saldo_ojol', hidden ? 'true' : 'false');
+
+      const eyeOpen = document.getElementById('eyeOjolOpen');
+      const eyeClosed = document.getElementById('eyeOjolClosed');
+      if (eyeOpen && eyeClosed) {
+        eyeOpen.classList.toggle('hidden', hidden);
+        eyeClosed.classList.toggle('hidden', !hidden);
+      }
+
+      document.querySelectorAll('.sensor-ojol').forEach(el => {
+        const real = el.getAttribute('data-real');
+        if (real) {
+          el.innerText = hidden ? 'Rp ••••••••' : real;
+        }
+      });
+    }
+
+    function toggleSensorOjol() {
+      terapkanSensorOjol(!isOjolHidden);
+    }
+
     // Modal Transaksi
     function bukaModalTransaksi() {
       document.getElementById('modalTransaksi').classList.remove('hidden');
@@ -1177,195 +1330,420 @@
       return tglStr;
     }
 
-    // Chart.js Setup
-    document.addEventListener("DOMContentLoaded", function () {
-      fetch('/api/charts')
-        .then(res => res.json())
-        .then(response => {
-          if (!response.success) return;
-          const data = response.data;
+    // =========================================================================
+    // CHART.JS INSTANCES & DINAMISASI PERIODE
+    // =========================================================================
+    let ojolChartInstance = null;
+    let kategoriChartInstance = null;
+    const catPalette = ['#3b82f6', '#f97316', '#10b981', '#8b5cf6', '#ec4899', '#eab308', '#06b6d4', '#64748b'];
 
-          // 1. Ojol Performance Chart
-          const ctxOjol = document.getElementById('ojolChart').getContext('2d');
-          const rawLabels = data.ojol_chart.labels || [];
-          const labels = rawLabels.length > 0 ? rawLabels.map(formatTanggalLabel) : ['Belum Ada Data'];
-          const labaKasData = rawLabels.length > 0 ? data.ojol_chart.laba_kas : [0];
-          const jarakKmData = rawLabels.length > 0 ? data.ojol_chart.jarak_km : [0];
+    function renderOjolChart(ojolData) {
+      const ctxOjol = document.getElementById('ojolChart').getContext('2d');
+      const rawLabels = (ojolData && ojolData.labels) ? ojolData.labels : [];
+      const labels = rawLabels.length > 0 ? rawLabels.map(formatTanggalLabel) : ['Belum Ada Data'];
+      const labaKasData = rawLabels.length > 0 ? ojolData.laba_kas : [0];
+      const jarakKmData = rawLabels.length > 0 ? ojolData.jarak_km : [0];
 
-          new Chart(ctxOjol, {
-            type: 'bar',
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  label: 'Laba Kas di Tangan (Rp)',
-                  data: labaKasData,
-                  backgroundColor: '#ff7a29',
-                  hoverBackgroundColor: '#ea580c',
-                  borderRadius: 6,
-                  borderSkipped: false,
-                  maxBarThickness: 50,
-                  yAxisID: 'y'
-                },
-                {
-                  label: 'Jarak Tempuh (KM)',
-                  data: jarakKmData,
-                  type: 'line',
-                  borderColor: '#2563eb',
-                  backgroundColor: '#2563eb',
-                  borderWidth: 2.5,
-                  pointBackgroundColor: '#ffffff',
-                  pointBorderColor: '#2563eb',
-                  pointBorderWidth: 2.5,
-                  pointRadius: 5,
-                  tension: 0.2,
-                  yAxisID: 'y1'
-                }
-              ]
+      if (ojolChartInstance) {
+        ojolChartInstance.destroy();
+        ojolChartInstance = null;
+      }
+
+      ojolChartInstance = new Chart(ctxOjol, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Laba Kas di Tangan (Rp)',
+              data: labaKasData,
+              backgroundColor: '#ff7a29',
+              hoverBackgroundColor: '#ea580c',
+              borderRadius: 6,
+              borderSkipped: false,
+              maxBarThickness: 50,
+              yAxisID: 'y'
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  backgroundColor: '#0f172a',
-                  titleFont: { family: 'Plus Jakarta Sans', size: 11 },
-                  bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
-                  padding: 10,
-                  cornerRadius: 8,
-                  callbacks: {
-                    label: function(context) {
-                      if (context.dataset.yAxisID === 'y') {
-                        return context.dataset.label + ': ' + rupiah(context.parsed.y);
-                      }
-                      return context.dataset.label + ': ' + context.parsed.y + ' km';
-                    }
+            {
+              label: 'Jarak Tempuh (KM)',
+              data: jarakKmData,
+              type: 'line',
+              borderColor: '#2563eb',
+              backgroundColor: '#2563eb',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#ffffff',
+              pointBorderColor: '#2563eb',
+              pointBorderWidth: 2.5,
+              pointRadius: 5,
+              tension: 0.2,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Plus Jakarta Sans', size: 11 },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  if (context.dataset.yAxisID === 'y') {
+                    return context.dataset.label + ': ' + rupiah(context.parsed.y);
                   }
-                }
-              },
-              scales: {
-                x: {
-                  grid: { display: false },
-                  ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
-                },
-                y: {
-                  type: 'linear',
-                  display: true,
-                  position: 'left',
-                  grid: { color: '#f1f5f9' },
-                  ticks: {
-                    color: '#64748b',
-                    font: { size: 10 },
-                    callback: function(value) { return 'Rp ' + (value / 1000) + 'k'; }
-                  }
-                },
-                y1: {
-                  type: 'linear',
-                  display: true,
-                  position: 'right',
-                  grid: { display: false },
-                  ticks: {
-                    color: '#2563eb',
-                    font: { size: 10 },
-                    callback: function(value) { return value + ' km'; }
-                  }
+                  return context.dataset.label + ': ' + context.parsed.y + ' km';
                 }
               }
             }
-          });
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                color: '#64748b',
+                font: { size: 10 },
+                callback: function(value) { return 'Rp ' + (value / 1000) + 'k'; }
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              grid: { display: false },
+              ticks: {
+                color: '#2563eb',
+                font: { size: 10 },
+                callback: function(value) { return value + ' km'; }
+              }
+            }
+          }
+        }
+      });
+    }
 
-          // 2. Expense Category Doughnut Chart
-          const ctxKategori = document.getElementById('kategoriChart').getContext('2d');
-          const hasKategoriData = data.kategori_chart.labels && data.kategori_chart.labels.length > 0;
-          const legendEl = document.getElementById('legendList');
+    function ubahPeriodeOjol(periode) {
+      fetch(`/api/charts?bulan=${encodeURIComponent(periode)}`)
+        .then(res => res.json())
+        .then(resp => {
+          if (!resp.success) return;
+          renderOjolChart(resp.data.ojol_chart);
+          const subEl = document.getElementById('subJudulOjol');
+          if (subEl) {
+            const mapLabel = {
+              'bulan_ini': 'Bulan Ini',
+              'bulan_lalu': 'Bulan Lalu',
+              '3bulan': '3 Bulan Terakhir',
+              'all': 'Semua Waktu'
+            };
+            subEl.innerText = `Data tren ShopeeFood (${mapLabel[periode] || periode}) • Total Kas: ${rupiah(resp.data.ojol_chart.total_laba_kas || 0)}`;
+          }
+        })
+        .catch(err => console.error("Error update ojol chart:", err));
+    }
 
-          if (hasKategoriData) {
-            const catLabels = data.kategori_chart.labels;
-            const catValues = data.kategori_chart.values;
-            const totalPengeluaran = catValues.reduce((a, b) => a + b, 0);
-            const catColors = ['#3b82f6', '#f97316', '#10b981', '#8b5cf6', '#ec4899', '#eab308', '#06b6d4'];
+    function renderKategoriChart(kategoriData) {
+      const ctxKategori = document.getElementById('kategoriChart').getContext('2d');
+      const catLabels = (kategoriData && kategoriData.labels) ? kategoriData.labels : [];
+      const catValues = (kategoriData && kategoriData.values) ? kategoriData.values : [];
+      const totalPengeluaran = (kategoriData && kategoriData.total_pengeluaran !== undefined) ? kategoriData.total_pengeluaran : (catValues.length > 0 ? catValues.reduce((a, b) => a + b, 0) : 0);
+      const legendEl = document.getElementById('legendList');
+      const centerTotalEl = document.getElementById('centerTotalPengeluaran');
 
-            new Chart(ctxKategori, {
-              type: 'doughnut',
-              data: {
-                labels: catLabels,
-                datasets: [{
-                  data: catValues,
-                  backgroundColor: catColors.slice(0, catLabels.length),
-                  borderWidth: 3,
-                  borderColor: '#ffffff',
-                  hoverOffset: 4
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { display: false },
-                  tooltip: {
-                    backgroundColor: '#0f172a',
-                    padding: 8,
-                    cornerRadius: 8,
-                    callbacks: {
-                      label: function(context) {
-                        return context.label + ': ' + rupiah(context.parsed);
-                      }
-                    }
+      if (centerTotalEl) {
+        centerTotalEl.innerText = rupiah(totalPengeluaran);
+      }
+
+      if (kategoriChartInstance) {
+        kategoriChartInstance.destroy();
+        kategoriChartInstance = null;
+      }
+
+      if (catLabels.length > 0) {
+        const bgColors = catPalette.slice(0, catLabels.length);
+        kategoriChartInstance = new Chart(ctxKategori, {
+          type: 'doughnut',
+          data: {
+            labels: catLabels,
+            datasets: [{
+              data: catValues,
+              backgroundColor: bgColors,
+              borderWidth: 3,
+              borderColor: '#ffffff',
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0f172a',
+                padding: 8,
+                cornerRadius: 8,
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + rupiah(context.parsed);
                   }
-                },
-                cutout: '72%'
+                }
               }
-            });
+            },
+            cutout: '72%'
+          }
+        });
 
-            let legendHtml = '';
-            catLabels.forEach((cat, idx) => {
-              const val = catValues[idx];
-              const pct = totalPengeluaran > 0 ? Math.round((val / totalPengeluaran) * 100) : 0;
-              const color = catColors[idx % catColors.length];
-              legendHtml += `
-                <div class="flex items-center justify-between text-slate-600">
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
-                    <span>${cat}</span>
-                  </div>
-                  <span class="font-bold text-slate-700">${pct}%</span>
-                </div>
-              `;
-            });
-            legendEl.innerHTML = legendHtml;
-
-          } else {
-            new Chart(ctxKategori, {
-              type: 'doughnut',
-              data: {
-                labels: ['Belum Ada Pengeluaran'],
-                datasets: [{
-                  data: [1],
-                  backgroundColor: ['#e2e8f0'],
-                  borderWidth: 0
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { display: false },
-                  tooltip: { enabled: false }
-                },
-                cutout: '72%'
-              }
-            });
-
-            legendEl.innerHTML = `
-              <div class="text-slate-400 text-xs py-2 text-center sm:text-left">
-                Belum ada data pengeluaran kas bulan ini.
+        // Render Legend Interaktif (Klik kategori langsung filter ke tabel transaksi di bawah!)
+        let legendHtml = '';
+        catLabels.forEach((cat, idx) => {
+          const val = catValues[idx];
+          const pct = totalPengeluaran > 0 ? Math.round((val / totalPengeluaran) * 100) : 0;
+          const color = catPalette[idx % catPalette.length];
+          legendHtml += `
+            <div onclick="pilihKategoriDariLegend('${cat}')" class="flex items-center justify-between text-slate-600 p-1 rounded-lg hover:bg-slate-100 cursor-pointer transition" title="Klik untuk memfilter transaksi '${cat}'">
+              <div class="flex items-center gap-2 truncate">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color}"></span>
+                <span class="truncate font-medium">${cat}</span>
               </div>
-            `;
+              <div class="text-right shrink-0 ml-2">
+                <span class="font-bold text-slate-800 text-[11px]">${rupiah(val)}</span>
+                <span class="text-slate-400 text-[10px] ml-1">(${pct}%)</span>
+              </div>
+            </div>
+          `;
+        });
+        legendEl.innerHTML = legendHtml;
+
+      } else {
+        // Empty State (Donut kosong abu-abu)
+        kategoriChartInstance = new Chart(ctxKategori, {
+          type: 'doughnut',
+          data: {
+            labels: ['Belum Ada Pengeluaran'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#e2e8f0'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            },
+            cutout: '72%'
+          }
+        });
+
+        legendEl.innerHTML = `
+          <div class="text-slate-400 text-xs py-3 text-center sm:text-left">
+            Tidak ada pengeluaran kas pada rentang waktu ini.
+          </div>
+        `;
+      }
+    }
+
+    function ubahPeriodePengeluaran(periode) {
+      const kat = document.getElementById('filterKategoriSelect').value;
+      fetch(`/api/charts?bulan=${encodeURIComponent(periode)}&kategori=${encodeURIComponent(kat)}`)
+        .then(res => res.json())
+        .then(resp => {
+          if (!resp.success) return;
+          renderKategoriChart(resp.data.kategori_chart);
+          const subEl = document.getElementById('subJudulPengeluaran');
+          if (subEl) {
+            const mapLabel = {
+              'bulan_ini': 'Bulan Ini',
+              'bulan_lalu': 'Bulan Lalu',
+              '3bulan': '3 Bulan Terakhir',
+              'all': 'Semua Waktu'
+            };
+            subEl.innerText = `Distribusi pengeluaran kas (${mapLabel[periode] || periode})`;
+          }
+        })
+        .catch(err => console.error("Error update kategori chart:", err));
+    }
+
+    function ubahKategoriPengeluaran(kategori) {
+      const periode = document.getElementById('filterPengeluaranPeriode').value;
+      fetch(`/api/charts?bulan=${encodeURIComponent(periode)}&kategori=${encodeURIComponent(kategori)}`)
+        .then(res => res.json())
+        .then(resp => {
+          if (!resp.success) return;
+          renderKategoriChart(resp.data.kategori_chart);
+        })
+        .catch(err => console.error("Error filter kategori chart:", err));
+    }
+
+    // =========================================================================
+    // FITUR FILTER TABEL TRANSAKSI & PENGELUARAN LIVE
+    // =========================================================================
+    let currentFilterTipe = 'Semua';
+
+    function setFilterTipe(tipe, btn) {
+      currentFilterTipe = tipe;
+      document.querySelectorAll('.btn-filter-tipe').forEach(b => {
+        b.className = 'btn-filter-tipe px-3 py-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition text-[11px]';
+      });
+
+      if (tipe === 'Pengeluaran') {
+        btn.className = 'btn-filter-tipe px-3 py-1 rounded-lg bg-rose-600 text-white font-bold transition text-[11px] shadow-xs';
+      } else if (tipe === 'Pemasukan') {
+        btn.className = 'btn-filter-tipe px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold transition text-[11px] shadow-xs';
+      } else if (tipe === 'Transfer') {
+        btn.className = 'btn-filter-tipe px-3 py-1 rounded-lg bg-blue-600 text-white font-bold transition text-[11px] shadow-xs';
+      } else {
+        btn.className = 'btn-filter-tipe px-3 py-1 rounded-lg bg-slate-900 text-white font-bold transition text-[11px] shadow-xs';
+      }
+
+      muatTransaksiFilter();
+    }
+
+    function pilihKategoriDariLegend(namaKategori) {
+      // Set dropdown kategori di toolbar tabel
+      const katSel = document.getElementById('filterTabelKategori');
+      if (katSel) {
+        katSel.value = namaKategori;
+      }
+      // Set filter tipe ke Pengeluaran
+      const btnPengeluaran = document.querySelectorAll('.btn-filter-tipe')[1];
+      if (btnPengeluaran) {
+        setFilterTipe('Pengeluaran', btnPengeluaran);
+      }
+      // Scroll halus ke tabel transaksi
+      const elTabel = document.getElementById('tabelTransaksi');
+      if (elTabel) {
+        elTabel.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function muatTransaksiFilter() {
+      const periode = document.getElementById('filterTabelPeriode').value;
+      const kategori = document.getElementById('filterTabelKategori').value;
+      const tbody = document.getElementById('transaksiTbody');
+      const badgeCount = document.getElementById('badgeTrxCount');
+      const badgeStat = document.getElementById('badgeStatTransaksi');
+
+      const url = `/api/transaksi?tipe=${encodeURIComponent(currentFilterTipe)}&bulan=${encodeURIComponent(periode)}&kategori=${encodeURIComponent(kategori)}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(resp => {
+          if (!resp.success) return;
+          const items = resp.data || [];
+          const stats = resp.stats || {};
+
+          // Update badges
+          if (badgeCount) badgeCount.innerText = `${items.length} Transaksi`;
+
+          if (badgeStat) {
+            if (currentFilterTipe === 'Pengeluaran') {
+              badgeStat.className = 'text-[11px] font-bold px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 shadow-xs';
+              badgeStat.innerHTML = `Total Pengeluaran: <b>${rupiah(stats.pengeluaran || 0)}</b> (${items.length} trx)`;
+            } else if (currentFilterTipe === 'Pemasukan') {
+              badgeStat.className = 'text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-xs';
+              badgeStat.innerHTML = `Total Pemasukan: <b>${rupiah(stats.pemasukan || 0)}</b> (${items.length} trx)`;
+            } else {
+              badgeStat.className = 'text-[11px] font-bold px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 shadow-xs';
+              badgeStat.innerHTML = `Total Nominal: <b>${rupiah(stats.total || 0)}</b> (${items.length} trx)`;
+            }
           }
 
+          if (items.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="7" class="text-center py-8 text-slate-400">
+                  Tidak ada transaksi yang cocok dengan filter "${currentFilterTipe}" pada periode ini.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          let rowsHtml = '';
+          items.forEach(item => {
+            let badgeTipe = '';
+            let warnaNominal = 'text-blue-600';
+            const tipeLower = (item.tipe || '').toLowerCase();
+
+            if (tipeLower === 'pemasukan') {
+              badgeTipe = '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#ebf8f2] text-[#00875a] border border-[#a3e2c6]">⬇ Pemasukan</span>';
+              warnaNominal = 'text-[#00875a]';
+            } else if (tipeLower === 'pengeluaran') {
+              badgeTipe = '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#fef2f4] text-[#e11d48] border border-[#fecdd3]">⬆ Pengeluaran</span>';
+              warnaNominal = 'text-[#e11d48]';
+            } else {
+              badgeTipe = '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">🔄 Transfer</span>';
+            }
+
+            let dompetCol = '';
+            if (tipeLower === 'transfer') {
+              dompetCol = `<span class="font-bold text-slate-800 text-[11px]">${item.dompet || 'Kas Tunai'} ➡️ ${item.dompet_tujuan || '-'}</span>`;
+            } else {
+              dompetCol = `<span class="inline-flex items-center gap-1 font-semibold text-slate-700 px-2 py-0.5 rounded-md bg-slate-100 text-[11px]">${item.dompet || 'Kas Tunai'}</span>`;
+            }
+
+            rowsHtml += `
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">${item.tanggal}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">${badgeTipe}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">${dompetCol}</td>
+                <td class="py-3.5 px-3 whitespace-nowrap">
+                  <span class="font-semibold text-slate-700 px-2 py-0.5 rounded bg-slate-100 text-[11px]">${item.kategori}</span>
+                </td>
+                <td class="py-3.5 px-4 whitespace-nowrap font-bold ${warnaNominal}">
+                  ${rupiah(item.nominal)}
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">${item.catatan || '-'}</td>
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  <form action="/api/transaksi/delete/${item.id}" method="POST" onsubmit="return confirm('Hapus transaksi ini dari buku kas?');" class="inline">
+                    <button type="submit" class="text-slate-400 hover:text-rose-500 transition p-1" title="Hapus">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            `;
+          });
+
+          tbody.innerHTML = rowsHtml;
         })
-        .catch(err => console.error("Error loading charts:", err));
+        .catch(err => console.error("Error loading filtered transactions:", err));
+    }
+
+    // =========================================================================
+    // INITIALIZATION ON PAGE LOAD
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", function () {
+      // Inisialisasi status sensor dari localStorage
+      terapkanSensorSaldo(isSaldoHidden);
+      terapkanSensorOjol(isOjolHidden);
+
+      // Muat data chart awal (Bulan Ini)
+      fetch('/api/charts?bulan=bulan_ini')
+        .then(res => res.json())
+        .then(response => {
+          if (!response.success) return;
+          renderOjolChart(response.data.ojol_chart);
+          renderKategoriChart(response.data.kategori_chart);
+        })
+        .catch(err => console.error("Error loading initial charts:", err));
+
+      // Inisialisasi badge transaksi awal
+      muatTransaksiFilter();
     });
   </script>
 

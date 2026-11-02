@@ -653,6 +653,7 @@ def index():
     log_ojol = db.get_log_ojol(limit=15)
     storage_status = db.get_status()
     dompet_list = rekap.get("dompet_list", [])
+    categories = db.get_categories()
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     return render_template(
@@ -661,6 +662,7 @@ def index():
         transaksi=transaksi,
         log_ojol=log_ojol,
         dompet_list=dompet_list,
+        categories=categories,
         storage_status=storage_status,
         today_str=today_str,
         bot_active=not IS_TOKEN_PLACEHOLDER
@@ -670,7 +672,7 @@ def index():
 @app.route("/api/summary")
 def api_summary():
     """Mengembalikan ringkasan rekap bulanan dalam format JSON."""
-    bulan = request.args.get("bulan")
+    bulan = request.args.get("bulan", "bulan_ini")
     rekap = db.get_rekap_bulanan(bulan=bulan)
     status_db = db.get_status()
     return jsonify({
@@ -683,8 +685,9 @@ def api_summary():
 @app.route("/api/charts")
 def api_charts():
     """Mengembalikan data yang siap divisualisasikan oleh Chart.js."""
-    bulan = request.args.get("bulan")
-    chart_data = db.get_chart_data(bulan=bulan)
+    bulan = request.args.get("bulan", "bulan_ini")
+    kategori = request.args.get("kategori")
+    chart_data = db.get_chart_data(bulan=bulan, kategori=kategori)
     return jsonify({
         "success": True,
         "data": chart_data
@@ -839,8 +842,24 @@ def api_transaksi():
     # GET
     limit = request.args.get("limit", type=int)
     bulan = request.args.get("bulan")
-    items = db.get_transaksi(limit=limit, bulan=bulan)
-    return jsonify({"success": True, "data": items})
+    tipe = request.args.get("tipe")
+    kategori = request.args.get("kategori")
+    items = db.get_transaksi(limit=limit, bulan=bulan, tipe=tipe, kategori=kategori)
+
+    total_nominal = sum(i["nominal"] for i in items)
+    total_pengeluaran = sum(i["nominal"] for i in items if i.get("tipe", "").lower() == "pengeluaran")
+    total_pemasukan = sum(i["nominal"] for i in items if i.get("tipe", "").lower() == "pemasukan")
+
+    return jsonify({
+        "success": True,
+        "data": items,
+        "stats": {
+            "total": total_nominal,
+            "pengeluaran": total_pengeluaran,
+            "pemasukan": total_pemasukan,
+            "count": len(items)
+        }
+    })
 
 
 @app.route("/api/transaksi/delete/<int:transaksi_id>", methods=["POST", "DELETE"])
