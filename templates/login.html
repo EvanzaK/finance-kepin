@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Keamanan • Finance Kepin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-800 antialiased font-sans">
+
+  <div class="max-w-md w-full">
+    
+    <!-- Header Brand -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 text-2xl mb-3">
+        🔐
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Finance Kepin</h1>
+      <p class="text-xs text-slate-500 mt-1">Proteksi Keamanan Dashboard Finansial Pribadi</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/70 border border-slate-100">
+      
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-slate-900">Masukkan PIN / Kata Sandi</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Hanya Anda yang berhak mengakses pembukuan dan kas ini.</p>
+      </div>
+
+      <!-- Alert Pesan Error jika PIN salah -->
+      {% if error %}
+      <div class="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-bounce">
+        <svg class="w-4 h-4 shrink-0 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}" class="space-y-4">
+        
+        <div>
+          <label for="pinInput" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            PIN / Password Akses
+          </label>
+          <div class="relative">
+            <input 
+              type="password" 
+              name="pin" 
+              id="pinInput" 
+              required 
+              autofocus
+              placeholder="Masukkan PIN / Kata Sandi..." 
+              class="w-full pl-4 pr-11 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-900 text-sm font-semibold tracking-wider placeholder:text-slate-400 placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-transparent transition"
+            >
+            <button 
+              type="button" 
+              onclick="toggleShowPin()" 
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+              title="Lihat / Sembunyikan PIN"
+            >
+              <svg id="eyeShow" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <svg id="eyeHide" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <label class="flex items-center space-x-2 text-slate-600 cursor-pointer select-none">
+            <input type="checkbox" name="remember" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+            <span class="font-medium">Ingat saya (30 hari)</span>
+          </label>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition flex items-center justify-center gap-2 mt-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+          </svg>
+          <span>Masuk ke Dashboard</span>
+        </button>
+
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-slate-100 flex items-center justify-center text-[11px] text-slate-400">
+        <span>🛡️ Sesi Aman Terenkripsi • Finance Kepin</span>
+      </div>
+
+    </div>
+
+    <!-- Small Footer -->
+    <div class="text-center mt-6 text-xs text-slate-400">
+      Finance Kepin &copy; 2026 • Personal Finance & ShopeeFood Tracker
+    </div>
+
+  </div>
+
+  <script>
+    function toggleShowPin() {
+      const pinInp = document.getElementById('pinInput');
+      const eyeShow = document.getElementById('eyeShow');
+      const eyeHide = document.getElementById('eyeHide');
+      if (pinInp.type === 'password') {
+        pinInp.type = 'text';
+        eyeShow.classList.add('hidden');
+        eyeHide.classList.remove('hidden');
+      } else {
+        pinInp.type = 'password';
+        eyeShow.classList.remove('hidden');
+        eyeHide.classList.add('hidden');
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@ import sys
 import threading
 import logging
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Pastikan output konsol Windows mendukung UTF-8 (Emoji & Simbol)
 if hasattr(sys.stdout, "reconfigure"):
@@ -19,7 +19,7 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from dotenv import load_dotenv
 
 # Dapatkan direktori dasar absolut
@@ -43,6 +43,7 @@ logger = logging.getLogger("AppServer")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "hybrid-finance-shopeefood-secret-2026")
+app.permanent_session_lifetime = timedelta(days=30)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 
@@ -643,6 +644,67 @@ def utility_processor():
         "max": max,
         "min": min
     }
+
+
+# =====================================================================
+# MIDDLEWARE KEAMANAN & AUTENTIKASI DASHBOARD
+# =====================================================================
+
+PUBLIC_ENDPOINTS = {"login", "logout", "webhook", "static"}
+
+@app.before_request
+def check_authentication():
+    """Memvalidasi session login sebelum mengizinkan akses ke dashboard atau API."""
+    if request.endpoint in PUBLIC_ENDPOINTS:
+        return
+    if request.path == "/webhook" or request.path.startswith("/static/"):
+        return
+    if not session.get("logged_in"):
+        if request.path.startswith("/api/"):
+            return jsonify({"success": False, "error": "Unauthorized. Silakan login terlebih dahulu."}), 401
+        return redirect(url_for("login", next=request.path))
+
+
+def get_configured_pin() -> str:
+    """Membaca PIN terbaru dari berkas .env secara dinamis tanpa harus restart server."""
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=True)
+    raw_pin = os.getenv("APP_PIN", os.getenv("APP_PASSWORD", "123456"))
+    return str(raw_pin).strip().strip('"').strip("'")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Halaman dan proses autentikasi PIN/Password."""
+    if session.get("logged_in"):
+        return redirect(url_for("index"))
+
+    error = None
+    configured_pin = get_configured_pin()
+
+    if request.method == "POST":
+        pin_input = request.form.get("pin", "").strip().strip('"').strip("'")
+        remember = request.form.get("remember") == "on"
+
+        if pin_input == configured_pin:
+            session["logged_in"] = True
+            session.permanent = remember
+            logger.info("Pengguna berhasil login ke dashboard.")
+            next_url = request.args.get("next")
+            if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+                return redirect(next_url)
+            return redirect(url_for("index"))
+        else:
+            error = "PIN atau Password salah. Silakan coba lagi."
+
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    """Menghapus sesi login dan mengarahkan kembali ke halaman login."""
+    session.pop("logged_in", None)
+    return redirect(url_for("login"))
 
 
 @app.route("/")
